@@ -1,0 +1,3 @@
+1.try use libgraphics library to build GUI and viusalization.
+2.try use clang-format tools to reformat the code.
+3.try use g++/clang to build the code and output the result.

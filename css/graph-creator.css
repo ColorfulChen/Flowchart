@@ -1,0 +1,173 @@
+p{
+  text-align: center;
+  overflow: overlay;
+  position: relative;
+}
+
+body{
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background-color: rgb(248, 248, 248)
+}
+
+#toolbox{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  margin-bottom: 0.5em;
+  margin-left: 1em;
+  border: 2px solid #EEEEEE;
+  border-radius: 5px;
+  padding: 1em;
+}
+
+#helpbox {
+  position: absolute;
+  bottom: 70px;
+  left: 0;
+  margin-bottom: 0.5em;
+  margin-left: 1em;
+  border: 2px solid #EEEEEE;
+  border-radius: 5px;
+  padding: 1em;
+}
+
+#helpbox :hover {
+  cursor: pointer;
+}
+
+#inspector{
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-bottom: 0.5em;
+  margin-left: 1em;
+  border-left: 2px solid #B94851;
+  padding: 1em;
+  z-index: 5;
+  background-color: #f1f1f1;
+  height: 100%;
+}
+
+#toolbox input{
+  width: 30px;
+  opacity: 0.4;
+}
+#toolbox input:hover{
+  opacity: 1;
+  cursor: pointer;
+}
+
+#hidden-file-upload{
+  display: none;
+}
+
+#download-input{
+  margin: 0 0.5em;
+}
+
+.conceptG text{
+  pointer-events: none;
+}
+
+marker{
+  fill: #3c39f2;
+}
+
+g.conceptG circle{
+  fill: #F6FBFF;
+  stroke: #6164c1;
+  stroke-width: 1px;
+}
+
+g.conceptG:hover circle{
+  fill: rgb(200, 238, 241);
+}
+
+g.selected circle{
+  fill: #e8d0ef;
+  stroke: #9b78d3;
+  stroke-width: 1.5px;
+}
+g.selected:hover circle{
+  fill: #e8d0ef;
+}
+g.conceptG text{    
+  font-size: 12px;
+  fill: #151996;
+}
+
+path.link {
+  fill: none;
+  stroke: #a6a6f2;
+  stroke-width: 2px;
+  cursor: default;
+}
+
+path.link:hover{
+  stroke: rgb(94, 196, 204) !important;
+}
+
+path.link[conditype=otherwise] {
+  stroke: #ffaf6c;
+}
+
+path.link[conditype=exception] {
+  stroke: #e98c99; 
+}
+
+path.link[conditype=workflowbean], path.link[conditype=tache] {
+  stroke: #232fc1;
+}
+
+path.link[conditype=condition], path.link[conditype=userdefine], path.link[conditype=custom] {
+  stroke: #a6a6f2;
+}
+
+path.link[conditype=defaultexception] {
+  stroke: #de4c4c;
+}
+
+g.connect-node circle{
+  fill: #BEFFFF;
+}
+
+path.link.hidden{
+  stroke-width: 0;
+  display: none
+}
+
+path.link.selected {
+  stroke: #9b78d3;
+}
+
+g.start circle {
+  fill: #59828c !important;
+  stroke: #fff;
+  stroke-width: 0px;
+}
+
+g.start text {
+  font-family: trebuche;
+  font-size: 37px;
+  fill: #fff;
+  font-weight: 550;
+}
+
+g.end circle {
+  fill: #9D5644 !important;
+  stroke: #fff;
+  stroke-width: 0px;
+}
+
+g.end text {
+  font-family: trebuche;
+  font-size: 37px;
+  fill: #fff;
+  font-weight: 550;
+}
+
