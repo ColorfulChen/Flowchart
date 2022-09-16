@@ -234,7 +234,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       console.log(d);
       thisGraph.nodes.push(d);
       thisGraph.updateGraph();
-  
+
     }).on('dragover', function (ev) {
       ev.preventDefault();
       console.log('drag over');
@@ -258,7 +258,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     });
 
   };
- 
+
   //constant config
   GraphCreator.prototype.consts = {
     selectedClass: "selected",
@@ -494,7 +494,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       thisGraph.updateGraph();
     }
 
-
+    thisGraph.updateGraph();
     state.mouseDownNode = null;
     return;
 
@@ -585,7 +585,20 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         return d === state.selectedEdge;
       })
       .attr("d", function (d) {
-        return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
+        //上下箭头
+        if (abs(d.target.x - d.source.x) < abs(d.target.y - d.source.y)) {
+          return "M" + d.source.x + "," + d.source.y +
+            "L" + d.target.x + "," + d.source.y +
+            "M" + d.target.x + "," + d.source.y +
+            "L" + d.target.x + "," + d.target.y;
+        }
+        //左右箭头
+        else {
+          return "M" + d.source.x + "," + d.source.y +
+            "L" + d.source.x + "," + d.target.y +
+            "M" + d.source.x + "," + d.target.y +
+            "L" + d.target.x + "," + d.target.y;
+        }
       });
 
     // add new paths
@@ -697,3 +710,11 @@ function generateUUID() {
   });
   return uuid;
 };
+
+function abs(absoluteValue) {
+
+  if(absoluteValue < 0) {
+    return absoluteValue * -1;
+  }
+  else return absoluteValue
+}
