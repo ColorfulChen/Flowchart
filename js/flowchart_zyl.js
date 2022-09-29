@@ -658,9 +658,12 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       })
       .call(thisGraph.drag);
     //add circle
-    newGs.append("circle")
-      .attr("r", String(consts.nodeRadius));
+    // newGs.append("circle")
+    //   .attr("r", String(consts.nodeRadius));
 
+    newGs.append("path")
+      .attr("d", "M 0 -50 L-100 0 L 0 50 L 100 0 Z ");
+    
     newGs.each(function (d) {
       thisGraph.insertTitleLinebreaks(d3.select(this), d.title);
     });
