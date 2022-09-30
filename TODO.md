@@ -1,3 +1,3 @@
-1.try use libgraphics library to build GUI and viusalization.
-2.try use clang-format tools to reformat the code.
-3.try use g++/clang to build the code and output the result.
+1.箭头会被盖住
+在创建边的时候要判断箭头的距离
+2.默认边是先连x轴再连y轴？

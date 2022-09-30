@@ -229,7 +229,8 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         title: shapeLabel,
         x: position.x,
         y: position.y,
-        eventTypeId: null
+        eventTypeId: null,
+        name: component
       };
       console.log(d);
       thisGraph.nodes.push(d);
@@ -269,7 +270,15 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     BACKSPACE_KEY: 8,
     DELETE_KEY: 46,
     ENTER_KEY: 13,
-    nodeRadius: 50
+    nodeRadius: 50,
+    startComponent: "M -60 -50 A 5 7 0 1 0 -60 50 L 60 50 A 5 7 0 1 0 60 -50 Z ",
+    activityComponent: "M -100 -50 L 100 -50 L 100 50 L -100 50 Z",
+    branchComponent: "M 0 -50 L -100 0 L 0 50 L 100 0 Z",
+    connecterComponent: "M 0 -50 A 10 10 0 1 0 0 50 A 10 10 0 1 0 0 -50 Z",
+    pageconnecterComponent: "M 0 -40 A 5 5 0 1 0 0 40 A 5 5 0 1 0 0 -40 Z",
+    databaseComponent: " M -60 -50 A 5 7 0 1 0 -60 50 L 60 50 A 5 7 0 1 0 60 -50 A 5 7 0 1 0 60 50 A 5 7 0 1 0 60 -50 Z",
+    fileComponent: "M -100 -50 L -100 30 A 10 4 0 1 0 0 30 A 10 4 0 1 1 100 30 L 100 -50 Z",
+    endComponent: "M -60 -50 A 5 7 0 1 0 -60 50 L 60 50 A 5 7 0 1 0 60 -50 Z "
   };
 
   /* PROTOTYPE FUNCTIONS */
@@ -585,8 +594,26 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         return d === state.selectedEdge;
       })
       .attr("d", function (d) {
+        //如果目标是分支,结束，或者流程只能上下链接
+        if (d.target.name == "branchComponent" ||
+          d.target.name == "activityComponent" ||
+          d.target.name == "endComponent") {
+          return "M" + d.source.x + "," + d.source.y +
+            "L" + d.target.x + "," + d.source.y +
+            "M" + d.target.x + "," + d.source.y +
+            "L" + d.target.x + "," + d.target.y;
+        }
+        //如果源头是开始或流程块，只能上下伸出边
+        else if (d.source.name == "activityComponent" ||
+          d.source.name == "startComponent") {
+          return "M" + d.source.x + "," + d.source.y +
+            "L" + d.source.x + "," + d.target.y +
+            "M" + d.source.x + "," + d.target.y +
+            "L" + d.target.x + "," + d.target.y;
+        }
+
         //上下箭头
-        if (abs(d.target.x - d.source.x) < abs(d.target.y - d.source.y)) {
+        else if (abs(d.target.x - d.source.x) < abs(d.target.y - d.source.y)) {
           return "M" + d.source.x + "," + d.source.y +
             "L" + d.target.x + "," + d.source.y +
             "M" + d.target.x + "," + d.source.y +
@@ -662,8 +689,29 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     //   .attr("r", String(consts.nodeRadius));
 
     newGs.append("path")
-      .attr("d", "M 0 -50 L-100 0 L 0 50 L 100 0 Z ");
-    
+      .attr("d", function (d) {
+        if (d.name == "startComponent") {
+          return consts.startComponent;
+        } else if (d.name == "activityComponent") {
+          return consts.activityComponent;
+        } else if (d.name == "branchComponent") {
+          return consts.branchComponent;
+        } else if (d.name == "connecterComponent") {
+          return consts.connecterComponent;
+        } else if (d.name == "pageconnecterComponent") {
+          return consts.pageconnecterComponent;
+        } else if (d.name == "databaseComponent") {
+          return consts.databaseComponent;
+        } else if (d.name == "fileComponent") {
+          return consts.fileComponent;
+        } else if (d.name == "endComponent") {
+          return consts.endComponent;
+        } else {
+          return consts.activityComponent;
+        }
+      });
+
+
     newGs.each(function (d) {
       thisGraph.insertTitleLinebreaks(d3.select(this), d.title);
     });
@@ -716,8 +764,7 @@ function generateUUID() {
 
 function abs(absoluteValue) {
 
-  if(absoluteValue < 0) {
+  if (absoluteValue < 0) {
     return absoluteValue * -1;
-  }
-  else return absoluteValue
+  } else return absoluteValue
 }
