@@ -91,26 +91,22 @@ g.conceptG path{
   stroke-width: 2px;
 }
 
-g.conceptG:hover circle{
-  fill: rgb(255, 0, 0);
-}
 
 g.conceptG:hover path{
-  fill: rgb(255, 0, 0);
+  fill: rgb(184,184,184);
 }
-
-g.selected circle{
-  fill: #ff0000;
+g.selected path{
+  fill: rgb(184,184,184);
 }
-g.selected:hover circle{
-  fill: #ff0000;
+g.selected:hover path{
+  fill: rgb(184,184,184);
 }
 
 g.selected path{
-  fill: #ff0000;
+  fill: #B8B8B8;
 }
 g.selected:hover path{
-  fill: #ff0000;
+  fill: #B8B8B8;
 }
 
 path.link {
@@ -121,7 +117,7 @@ path.link {
 }
 
 path.link:hover{
-  stroke: rgb(255, 0, 0);
+  stroke: rgb(184,184,184);
 }
 
 g.connect-node circle{
@@ -137,5 +133,5 @@ path.link.hidden{
 }
 
 path.link.selected {
-  stroke: rgb(255, 0, 0);
+  stroke: rgb(184,184,184);
 }
