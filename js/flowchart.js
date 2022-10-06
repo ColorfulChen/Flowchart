@@ -605,7 +605,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           d.target.name == "endComponent") {
           return "M" + d.source.x + "," + d.source.y +
             "L" + d.target.x + "," + d.source.y +
-            "M" + d.target.x + "," + d.source.y +
             "L" + d.target.x + "," + d.target.y;
         }
         //如果源头是开始或流程块，只能上下伸出边
@@ -613,21 +612,18 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           d.source.name == "startComponent") {
           return "M" + d.source.x + "," + d.source.y +
             "L" + d.source.x + "," + d.target.y +
-            "M" + d.source.x + "," + d.target.y +
             "L" + d.target.x + "," + d.target.y;
         }
         //上下箭头
         else if (abs(d.target.x - d.source.x) < abs(d.target.y - d.source.y)) {
           return "M" + d.source.x + "," + d.source.y +
             "L" + d.target.x + "," + d.source.y +
-            "M" + d.target.x + "," + d.source.y +
             "L" + d.target.x + "," + d.target.y;
         }
         //左右箭头
         else {
           return "M" + d.source.x + "," + d.source.y +
             "L" + d.source.x + "," + d.target.y +
-            "M" + d.source.x + "," + d.target.y +
             "L" + d.target.x + "," + d.target.y;
         }
       });
@@ -746,6 +742,8 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
   };
 
   GraphCreator.prototype.circleDoubleClick = function (d3node, d) {
+    console.log(d);
+
     var oldtext = d.title; //获得元素之前的内容
     var newtext = prompt("输入节点内容")
     d.title = newtext ? newtext : oldtext;

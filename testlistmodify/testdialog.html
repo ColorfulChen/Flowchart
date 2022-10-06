@@ -1,0 +1,15 @@
+<dialog>
+    <form method="dialog">
+        <p>确定 or 取消</p>
+        <button type="submit" value="yes">确定</button>
+        <button type="submit" value="no">取消</button>
+    </form>
+</dialog>
+
+<script>
+    var dialog = document.querySelector('dialog')
+    dialog.showModal()
+    dialog.addEventListener('close', function (event) {
+        console.log(dialog.returnValue)
+    })
+</script>
