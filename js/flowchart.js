@@ -365,45 +365,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     }
     thisGraph.state.selectedNode = nodeData;
 
-    /*d3.json("js/processes.json", function(error, json){
-
-      json = _.sortBy(json, function(d){ return d.Value })
-
-      if(error){
-        alert("Error occured while getting processes. Check console for details.");
-        console.log(error);
-        return;
-      }
-
-      var inspector = d3.select("div#container").append("div").attr({ id: "inspector"});
-      var sel = inspector.append("select")
-          .on("change", function(d){
-            // Update thisGraph.nodes and graph text with selected option.
-            var selectedOption = this.options[this.selectedIndex];
-            // selectedOption.value & selectedOption.text
-
-            d3Node.select("text").remove();
-            thisGraph.insertTitleLinebreaks(d3Node, selectedOption.text);
-            nodeData.eventTypeId = parseInt(selectedOption.value);
-            nodeData.title = selectedOption.text;
-
-            // console.log('thisGraph.nodes');
-            // console.log(thisGraph.nodes);
-
-          });
-
-
-      var options = sel.selectAll("option");
-
-      options.data(json).enter()
-          .append("option")
-              .attr({value: function(d){ return d.Key }})
-              .text(function(d){ return d.Value })
-          .property("selected", function(d, i){
-                return d.Key === nodeData.eventTypeId;
-          });
-
-    });*/
   };
 
   GraphCreator.prototype.removeSelectFromNode = function () {
@@ -529,15 +490,9 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           if (!prevNode || prevNode !== d) {
             thisGraph.replaceSelectNode(d3node, d);
             thisGraph.changePropDiv(d); // 添加更改属性div
-            thisGraph.showMenu();
             // thisGraph.menuEvent();
           } else {
-            if (d3.event.button == '2') {
-              thisGraph.showMenu();
-              // thisGraph.menuEvent();
-            } else {
               thisGraph.removeSelectFromNode();
-            }
           }
         }
       }
