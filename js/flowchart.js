@@ -320,7 +320,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
   /* insert svg line breaks: taken from http://stackoverflow.com/questions/13241475/how-do-i-include-newlines-in-labels-in-d3-charts */
   GraphCreator.prototype.insertTitleLinebreaks = function (gEl, title) {
     gEl.select("text").remove();
-    
+
     var words = title.split(/;/),
       nwords = words.length;
     var el = gEl.append("text")
@@ -448,7 +448,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
   // mousedown on node
   GraphCreator.prototype.circleMouseDown = function (d3node, d) {
     var thisGraph = this,
-    state = thisGraph.state;
+      state = thisGraph.state;
     d3.event.stopPropagation();
     state.mouseDownNode = d;
 
@@ -480,7 +480,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
   // mouseup on nodes
   GraphCreator.prototype.circleMouseUp = function (d3node, d) {
-    console.log('circle mouse up');
+    //console.log('circle mouse up');
     var thisGraph = this,
       state = thisGraph.state,
       consts = thisGraph.consts;
@@ -494,7 +494,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
     thisGraph.dragLine.classed("hidden", true);
 
-    if (mouseDownNode != d) {
+    if (mouseDownNode !== d) {
       // we're in a different node: create new edge for mousedown edge and add to graph
       var newEdge = {
         source: mouseDownNode,
@@ -503,6 +503,44 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
       thisGraph.edges.push(newEdge);
       thisGraph.updateGraph();
+    } else {
+      // we're in the same node
+      var prevNode = state.selectedNode;
+      if (state.justDragged) {
+        // dragged, not clicked
+        if (state.selectedEdge) {
+          thisGraph.removeSelectFromEdge();
+        }
+        if (!prevNode || prevNode !== d) {
+          thisGraph.replaceSelectNode(d3node, d);
+          thisGraph.changePropDiv(d); // 添加更改属性div
+        } else {
+          // thisGraph.removeSelectFromNode();
+        }
+
+      } else {
+        // clicked, not dragged
+        if (d3.event.shiftKey) {
+
+        } else {
+          if (state.selectedEdge) {
+            thisGraph.removeSelectFromEdge();
+          }
+          if (!prevNode || prevNode !== d) {
+            thisGraph.replaceSelectNode(d3node, d);
+            thisGraph.changePropDiv(d); // 添加更改属性div
+            thisGraph.showMenu();
+            // thisGraph.menuEvent();
+          } else {
+            if (d3.event.button == '2') {
+              thisGraph.showMenu();
+              // thisGraph.menuEvent();
+            } else {
+              thisGraph.removeSelectFromNode();
+            }
+          }
+        }
+      }
     }
 
     thisGraph.updateGraph();
@@ -596,8 +634,18 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         return d === state.selectedEdge;
       })
       .attr("d", function (d) {
-        //如果目标是分支,结束，或者流程只能上下链接
-        if (d.target.name == "branchComponent" ||
+        //源头是分支块的情况比较复杂
+        if (d.source.name == "branchComponent" && d.target.y < d.source.y && abs(d.target.x - d.source.x) < 130) {
+          //如果是向上连接
+          return "M" + d.source.x + "," + d.source.y +
+            "L" + (d.source.x - 180) + "," + d.source.y +
+            "L" + (d.source.x - 180) + "," + (d.target.y - 100) +
+            "L" + d.target.x + "," + (d.target.y - 100) +
+            "L" + d.target.x + "," + d.target.y;
+
+        }
+        //如果目标是分支,结束，或者流程只能上下被连接
+        else if (d.target.name == "branchComponent" ||
           d.target.name == "activityComponent" ||
           d.target.name == "endComponent") {
           return "M" + d.source.x + "," + d.source.y +
@@ -613,7 +661,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
             "M" + d.source.x + "," + d.target.y +
             "L" + d.target.x + "," + d.target.y;
         }
-
         //上下箭头
         else if (abs(d.target.x - d.source.x) < abs(d.target.y - d.source.y)) {
           return "M" + d.source.x + "," + d.source.y +
@@ -688,7 +735,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         console.log('on mouse up d:');
         thisGraph.circleMouseUp.call(thisGraph, d3.select(this), d);
       })
-      .on("dblclick", function(d) {
+      .on("dblclick", function (d) {
         console.log('on double click d:');
         thisGraph.circleDoubleClick.call(thisGraph, d3.select(this), d);
       })
@@ -743,11 +790,11 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     svg.attr("width", x).attr("height", y);
   };
 
-  GraphCreator.prototype.circleDoubleClick = function (d3node, d) {    
+  GraphCreator.prototype.circleDoubleClick = function (d3node, d) {
     var oldtext = d.title; //获得元素之前的内容
     var newtext = prompt("输入节点内容")
-    d.title = newtext ? newtext : oldtext;    
-    this.insertTitleLinebreaks(d3node,d.title);
+    d.title = newtext ? newtext : oldtext;
+    this.insertTitleLinebreaks(d3node, d.title);
     return;
 
   }; // end of circles mousedblclick
