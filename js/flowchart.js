@@ -319,7 +319,9 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
   /* insert svg line breaks: taken from http://stackoverflow.com/questions/13241475/how-do-i-include-newlines-in-labels-in-d3-charts */
   GraphCreator.prototype.insertTitleLinebreaks = function (gEl, title) {
-    var words = title.split(/\s+/g),
+    gEl.select("text").remove();
+    
+    var words = title.split(/;/),
       nwords = words.length;
     var el = gEl.append("text")
       .attr("text-anchor", "middle")
@@ -446,7 +448,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
   // mousedown on node
   GraphCreator.prototype.circleMouseDown = function (d3node, d) {
     var thisGraph = this,
-      state = thisGraph.state;
+    state = thisGraph.state;
     d3.event.stopPropagation();
     state.mouseDownNode = d;
 
@@ -668,11 +670,13 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         return "translate(" + d.x + "," + d.y + ")";
       })
       .on("mouseover", function (d) {
+        console.log('on mouse over d:');
         if (state.shiftNodeDrag) {
           d3.select(this).classed(consts.connectClass, true);
         }
       })
       .on("mouseout", function (d) {
+        console.log('on mouse out d:');
         d3.select(this).classed(consts.connectClass, false);
       })
       .on("mousedown", function (d) {
@@ -681,7 +685,12 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         thisGraph.circleMouseDown.call(thisGraph, d3.select(this), d);
       })
       .on("mouseup", function (d) {
+        console.log('on mouse up d:');
         thisGraph.circleMouseUp.call(thisGraph, d3.select(this), d);
+      })
+      .on("dblclick", function(d) {
+        console.log('on double click d:');
+        thisGraph.circleDoubleClick.call(thisGraph, d3.select(this), d);
       })
       .call(thisGraph.drag);
     //add circle
@@ -733,6 +742,15 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     var y = window.innerHeight || docEl.clientHeight || bodyEl.clientHeight;
     svg.attr("width", x).attr("height", y);
   };
+
+  GraphCreator.prototype.circleDoubleClick = function (d3node, d) {    
+    var oldtext = d.title; //获得元素之前的内容
+    var newtext = prompt("输入节点内容")
+    d.title = newtext ? newtext : oldtext;    
+    this.insertTitleLinebreaks(d3node,d.title);
+    return;
+
+  }; // end of circles mousedblclick
 
 
 
