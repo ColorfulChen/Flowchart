@@ -259,8 +259,61 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       }
     });
 
-  };
+    //点击导入导出按钮
+    $('.editor-toolbar').on('click', '.sign.in,.sign.out', function (event) {
+      var isImport = $(this).hasClass('in');
+      $('.ui.modal').modal({
+          onDeny: function () {
+            // window.alert('取消!');
+          },
+          onApprove: function () {
+            if (isImport) {
+              var jsonStr = $('div.json_data textarea').val();
+              if (jsonStr) {
+                var json = JSON.parse(jsonStr);
+                var edges = [];
+                var nodes = json.nodes;
+                for (var i in json.edges) {
+                  var source = json.edges[i].source.id;
+                  var target = json.edges[i].target.id;
+                  var edge = {};
+                  for (var j in json.nodes) {
+                    var node = json.nodes[j].id
+                    if (source == node) {
+                      edge.source = nodes[j];
+                    }
+                    if (target == node) {
+                      edge.target = nodes[j];
+                    }
+                  }
+                  edges.push(edge);
+                }
+                thisGraph.nodes = thisGraph.nodes.concat(nodes);
+                thisGraph.edges = thisGraph.edges.concat(edges);
+                graph.updateGraph();
+              }
+            }
+          },
+          onHidden: function () {
+            $('#div.json_data input,textarea').val('');
+          }
+        })
+        .modal('setting', 'transition', 'scale')
+        .modal('show');
 
+      if ($(this).hasClass('in')) {
+        $('div.json_data .header').text('导入数据');
+      } else {
+        $('div.json_data .header').text('导出数据');
+        var json = {};
+        json.nodes = thisGraph.nodes;
+        json.edges = thisGraph.edges;
+        console.log(JSON.stringify(json));
+        $('div.json_data textarea').val(JSON.stringify(json));
+      }
+    });
+
+  };
   //constant config
   GraphCreator.prototype.consts = {
     selectedClass: "selected",
@@ -625,8 +678,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
                 "L" + (d.source.x - 180) + "," + (d.target.y - 100) +
                 "L" + d.target.x + "," + (d.target.y - 100) +
                 "L" + d.target.x + "," + d.target.y;
-            }
-            else {
+            } else {
               return "M" + d.source.x + "," + d.source.y +
                 "L" + d.target.x + "," + d.source.y +
                 "L" + d.target.x + "," + d.target.y;
@@ -641,7 +693,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
             "L" + (d.source.x - 180) + "," + (d.target.y - 100) +
             "L" + d.target.x + "," + (d.target.y - 100) +
             "L" + d.target.x + "," + d.target.y;
-        } 
+        }
         //如果目标是分支,结束，或者流程只能上下被连接
         else if (d.target.name == "branchComponent" ||
           d.target.name == "activityComponent" ||
