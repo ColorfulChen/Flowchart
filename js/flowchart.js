@@ -233,7 +233,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         name: component,
         state: 0
       };
-      console.log(d);
       thisGraph.nodes.push(d);
       thisGraph.updateGraph();
 
@@ -324,6 +323,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     BACKSPACE_KEY: 8,
     DELETE_KEY: 46,
     ENTER_KEY: 13,
+    TAB_KEY: 9,
     nodeRadius: 50,
     startComponent: "M -60 -50 A 5 7 0 1 0 -60 50 L 60 50 A 5 7 0 1 0 60 -50 Z ",
     activityComponent: "M -100 -50 L 100 -50 L 100 50 L -100 50 Z",
@@ -581,7 +581,8 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           title: "",
           x: xycoords[0],
           y: xycoords[1],
-          eventTypeId: null
+          eventTypeId: null,
+          state: 0
         };
       thisGraph.nodes.push(d);
       thisGraph.updateGraph();
@@ -621,6 +622,17 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           thisGraph.updateGraph();
         }
         break;
+    
+      case consts.TAB_KEY:
+        d3.event.preventDefault();
+        if (selectedNode) {
+          if (selectedNode.name == "branchComponent") {
+            var index = thisGraph.nodes.indexOf(selectedNode);
+            thisGraph.nodes[index].state = (thisGraph.nodes[index].state + 1) % 3;
+            thisGraph.updateGraph();
+          }
+        }
+        break;
     }
   };
 
@@ -641,7 +653,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     });
     var paths = thisGraph.paths;
     // update existing paths
-    console.log(paths);
+
     paths.style('marker-end', 'url(#end-arrow)')
       .classed(consts.selectedClass, function (d) {
         return d === state.selectedEdge;
@@ -774,21 +786,22 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       })
       .on("mousedown", function (d) {
         console.log('on mouse down d:');
-        console.log(d);
         thisGraph.circleMouseDown.call(thisGraph, d3.select(this), d);
       })
       .on("mouseup", function (d) {
         console.log('on mouse up d:');
         thisGraph.circleMouseUp.call(thisGraph, d3.select(this), d);
       })
-      .on("click", function (d) {
-        console.log('on click d:');
-        console.log(d);
-        thisGraph.circleClick.call(thisGraph, d3.select(this), d)
-      })
+      // .on("click", function (d) {
+      //   console.log('on click d:');
+      //   thisGraph.circleClick.call(thisGraph, d3.select(this), d);
+      // })
       .on("dblclick", function (d) {
         console.log('on double click d:');
         thisGraph.circleDoubleClick.call(thisGraph, d3.select(this), d);
+      })
+      .on("keydown",function (d) {
+        thisGraph.circleClick.call(thisGraph, d3.select(this), d);
       })
       .call(thisGraph.drag);
     //add circle
@@ -818,8 +831,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         }
       });
 
-
-    newGs.each(function (d) {
+    thisGraph.circles.each(function (d) {
       thisGraph.insertTitleLinebreaks(d3.select(this), d);
     });
 
@@ -842,16 +854,30 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
   };
 
   GraphCreator.prototype.circleDoubleClick = function (d3node, d) {
-    var oldtext = d.title; //获得元素之前的内容
-    var newtext = prompt("输入节点内容")
-    d.title = newtext ? newtext : oldtext;
-    this.insertTitleLinebreaks(d3node, d);
+    $('div.json_data .header').text('导入节点数据');
+    $('.ui.modal').modal({
+        onDeny: function () {
+          // window.alert('取消!');
+        },
+        onApprove: function () {
+          var newtext = $('div.json_data textarea').val();
+          if (newtext) {
+            d.title = newtext;
+            graph.insertTitleLinebreaks(d3node, d);
+            graph.updateGraph();
+          }
+        },
+        onHidden: function () {
+          $('#div.json_data input,textarea').val('');
+        }
+      })
+      .modal('setting', 'transition', 'scale')
+      .modal('show');
     return;
   }; // end of circles mousedblclick
 
   GraphCreator.prototype.circleClick = function (d3node, d) {
     if (d.name == "branchComponent") {
-      d.state = (d.state + 1) % 3;
       this.insertTitleLinebreaks(d3node, d);
       this.updateGraph();
     }
