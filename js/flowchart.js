@@ -230,7 +230,8 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         x: position.x,
         y: position.y,
         eventTypeId: null,
-        name: component
+        name: component,
+        state: 0
       };
       console.log(d);
       thisGraph.nodes.push(d);
@@ -318,10 +319,10 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
 
   /* insert svg line breaks: taken from http://stackoverflow.com/questions/13241475/how-do-i-include-newlines-in-labels-in-d3-charts */
-  GraphCreator.prototype.insertTitleLinebreaks = function (gEl, title) {
+  GraphCreator.prototype.insertTitleLinebreaks = function (gEl, d) {
     gEl.select("text").remove();
 
-    var words = title.split(/;/),
+    var words = d.title.split(/;/),
       nwords = words.length;
     var el = gEl.append("text")
       .attr("text-anchor", "middle")
@@ -332,6 +333,26 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       if (i > 0)
         tspan.attr('x', 0).attr('dy', '15');
     }
+
+    if (d.name == "branchComponent") {
+      //for if branch
+      if (d.state == 0) {
+        el.append("tspan").text("T").attr('x', -80).attr('y', 5);
+        el.append("tspan").text("F").attr('x', 80).attr('y', 5);
+      }
+      //for while branch
+      else if (d.state == 1) {
+        el.append("tspan").text("T").attr('x', 0).attr('y', 40);
+        el.append("tspan").text("F").attr('x', 80).attr('y', 5);
+      }
+      //for do-while branch
+      else if (d.state == 2) {
+        el.append("tspan").text("T").attr('x', -80).attr('y', 5);
+        el.append("tspan").text("F").attr('x', 0).attr('y', 40);
+      }
+    }
+
+    return;
   };
 
 
@@ -422,22 +443,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       return;
     }
   };
-  //更改属性div
-  GraphCreator.prototype.changePropDiv = function (d) {
-    var thisGraph = this;
-    $('.component-prop').empty().append(
-      '<div>' +
-      '  <div name="id" class="prop-value"><span>id:</span><span>' + d.id + '</span></div>' +
-      '  <div name="name" class="prop-value"><span>名称:</span><span>' + d.title + '</span></div>' +
-      '</div>' +
-      '<div class="clearfix"></div>' +
-      '<div> ' +
-      '  <div name="type" class="prop-value"><span>类型:</span><span>null</span></div>' +
-      '  <div name="" class="prop-value"><span>执行者:</span><span>无</span></div>' +
-      '</div>' +
-      '<div class="clearfix"></div>');
-
-  }
 
   // mouseup on nodes
   GraphCreator.prototype.circleMouseUp = function (d3node, d) {
@@ -473,8 +478,8 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           thisGraph.removeSelectFromEdge();
         }
         if (!prevNode || prevNode !== d) {
+          thisGraph.removeSelectFromNode();
           thisGraph.replaceSelectNode(d3node, d);
-          thisGraph.changePropDiv(d); // 添加更改属性div
         } else {
           // thisGraph.removeSelectFromNode();
         }
@@ -489,10 +494,9 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           }
           if (!prevNode || prevNode !== d) {
             thisGraph.replaceSelectNode(d3node, d);
-            thisGraph.changePropDiv(d); // 添加更改属性div
             // thisGraph.menuEvent();
           } else {
-              thisGraph.removeSelectFromNode();
+            thisGraph.removeSelectFromNode();
           }
         }
       }
@@ -584,21 +588,60 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     });
     var paths = thisGraph.paths;
     // update existing paths
+    console.log(paths);
     paths.style('marker-end', 'url(#end-arrow)')
       .classed(consts.selectedClass, function (d) {
         return d === state.selectedEdge;
       })
       .attr("d", function (d) {
         //源头是分支块的情况比较复杂
-        if (d.source.name == "branchComponent" && d.target.y < d.source.y && abs(d.target.x - d.source.x) < 130) {
-          //如果是向上连接
+        if (d.source.name == "branchComponent") {
+          // if-branch
+          if (d.source.state == 0) {
+            return "M" + d.source.x + "," + d.source.y +
+              "L" + d.target.x + "," + d.source.y +
+              "L" + d.target.x + "," + d.target.y;
+          }
+          //while-branch
+          else if (d.source.state == 1) {
+            if (abs(d.target.y - d.source.y) > 300) {
+              return "M" + d.source.x + "," + d.source.y +
+                "L" + (d.source.x + 180) + "," + d.source.y +
+                "L" + (d.source.x + 180) + "," + (d.target.y - 100) +
+                "L" + d.target.x + "," + (d.target.y - 100) +
+                "L" + d.target.x + "," + d.target.y;
+            } else {
+              return "M" + d.source.x + "," + d.source.y +
+                "L" + d.target.x + "," + d.source.y +
+                "L" + d.target.x + "," + d.target.y;
+            }
+          }
+          //do-while branch
+          else if (d.source.state == 2) {
+            //在上方
+            if (d.target.y < d.source.y) {
+              return "M" + d.source.x + "," + d.source.y +
+                "L" + (d.source.x - 180) + "," + d.source.y +
+                "L" + (d.source.x - 180) + "," + (d.target.y - 100) +
+                "L" + d.target.x + "," + (d.target.y - 100) +
+                "L" + d.target.x + "," + d.target.y;
+            }
+            else {
+              return "M" + d.source.x + "," + d.source.y +
+                "L" + d.target.x + "," + d.source.y +
+                "L" + d.target.x + "," + d.target.y;
+            }
+          }
+        }
+        //如果目标是分支，且状态为2，也是拐着连接
+        else if (d.target.name == "branchComponent" && d.target.state == 1 && d.target.y < d.source.y) {
           return "M" + d.source.x + "," + d.source.y +
-            "L" + (d.source.x - 180) + "," + d.source.y +
+            "L" + d.source.x + "," + (d.source.y + 100) +
+            "L" + (d.source.x - 180) + "," + (d.source.y + 100) +
             "L" + (d.source.x - 180) + "," + (d.target.y - 100) +
             "L" + d.target.x + "," + (d.target.y - 100) +
             "L" + d.target.x + "," + d.target.y;
-
-        }
+        } 
         //如果目标是分支,结束，或者流程只能上下被连接
         else if (d.target.name == "branchComponent" ||
           d.target.name == "activityComponent" ||
@@ -686,6 +729,11 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         console.log('on mouse up d:');
         thisGraph.circleMouseUp.call(thisGraph, d3.select(this), d);
       })
+      .on("click", function (d) {
+        console.log('on click d:');
+        console.log(d);
+        thisGraph.circleClick.call(thisGraph, d3.select(this), d)
+      })
       .on("dblclick", function (d) {
         console.log('on double click d:');
         thisGraph.circleDoubleClick.call(thisGraph, d3.select(this), d);
@@ -720,7 +768,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
 
     newGs.each(function (d) {
-      thisGraph.insertTitleLinebreaks(d3.select(this), d.title);
+      thisGraph.insertTitleLinebreaks(d3.select(this), d);
     });
 
     // remove old nodes
@@ -742,17 +790,21 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
   };
 
   GraphCreator.prototype.circleDoubleClick = function (d3node, d) {
-    console.log(d);
-
     var oldtext = d.title; //获得元素之前的内容
     var newtext = prompt("输入节点内容")
     d.title = newtext ? newtext : oldtext;
-    this.insertTitleLinebreaks(d3node, d.title);
+    this.insertTitleLinebreaks(d3node, d);
     return;
-
   }; // end of circles mousedblclick
 
-
+  GraphCreator.prototype.circleClick = function (d3node, d) {
+    if (d.name == "branchComponent") {
+      d.state = (d.state + 1) % 3;
+      this.insertTitleLinebreaks(d3node, d);
+      this.updateGraph();
+    }
+    return;
+  }; // end of circles mouseclick
 
   /**** MAIN ****/
 
