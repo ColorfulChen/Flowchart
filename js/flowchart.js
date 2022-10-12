@@ -137,6 +137,8 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
       dragSvg.scale(1);
       dragSvg.translate([1, 0]);
+      scale = 1;
+      translate = [0, 0];
     });
 
     // handle download data
@@ -217,8 +219,8 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     //creat
     $('#container').on('drop', function (ev) {
       var position = {};
-      position.x = parseInt(ev.originalEvent.offsetX),
-        position.y = parseInt(ev.originalEvent.offsetY);
+      position.x = (parseInt(ev.originalEvent.offsetX) - translate[0]) / scale,
+        position.y = (parseInt(ev.originalEvent.offsetY) - translate[1]) / scale;
       var shapeLabel = ev.originalEvent.dataTransfer.getData('text'),
         shapename = ev.originalEvent.dataTransfer.getData('shapename'),
         component = ev.originalEvent.dataTransfer.getData('component'),
@@ -229,7 +231,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         title: shapeLabel,
         x: position.x,
         y: position.y,
-        eventTypeId: null,
         name: component,
         state: 0
       };
@@ -446,7 +447,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
     var thisGraph = this;
     thisGraph.circles.filter(function (cd) {
-      return cd.id === thisGraph.state.selectedNode.id;
+      return cd == thisGraph.state.selectedNode;
     }).classed(thisGraph.consts.selectedClass, false);
     thisGraph.state.selectedNode = null;
 
@@ -581,7 +582,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           title: "",
           x: xycoords[0],
           y: xycoords[1],
-          eventTypeId: null,
           state: 0
         };
       thisGraph.nodes.push(d);
@@ -643,6 +643,9 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
   // call to propagate changes to graph
   //update rectangle
   GraphCreator.prototype.updateGraph = function () {
+
+    console.log(translate);
+    console.log(scale);
 
     var thisGraph = this,
       consts = thisGraph.consts,
@@ -759,6 +762,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     });
     thisGraph.circles.attr("transform", function (d) {
       return "translate(" + d.x + "," + d.y + ")";
+      //return "translate(" + (d.x - translate[0]) * scale + "," + (d.y - translate[1]) * scale + ")";
     });
 
     // add new nodes
@@ -772,6 +776,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
     newGs.classed(consts.circleGClass, true)
       .attr("transform", function (d) {
+        //return "translate(" + (d.x - translate[0]) * scale + "," + (d.y - translate[1]) * scale + ")";
         return "translate(" + d.x + "," + d.y + ")";
       })
       .on("mouseover", function (d) {
@@ -790,20 +795,20 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       })
       .on("mouseup", function (d) {
         console.log('on mouse up d:');
+        console.log(d);
         thisGraph.circleMouseUp.call(thisGraph, d3.select(this), d);
       })
-      // .on("click", function (d) {
-      //   console.log('on click d:');
-      //   thisGraph.circleClick.call(thisGraph, d3.select(this), d);
-      // })
       .on("dblclick", function (d) {
         console.log('on double click d:');
         thisGraph.circleDoubleClick.call(thisGraph, d3.select(this), d);
       })
-      .on("keydown",function (d) {
-        thisGraph.circleClick.call(thisGraph, d3.select(this), d);
-      })
       .call(thisGraph.drag);
+      // .attr("x", function (d) {
+      //     return (d.x - translate[0]) * scale;
+      //   })
+      // .attr("y", function (d) {
+      //     return (d.y - translate[1]) * scale;
+      //   });
     //add circle
     // newGs.append("circle")
     //   .attr("r", String(consts.nodeRadius));
@@ -841,8 +846,10 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
   GraphCreator.prototype.zoomed = function () {
     this.state.justScaleTransGraph = true;
+    translate = d3.event.translate;
+    scale = d3.event.scale;
     d3.select("." + this.consts.graphClass)
-      .attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
+      .attr("transform", "translate(" + translate + ") scale(" + scale + ")");
   };
 
   GraphCreator.prototype.updateWindow = function (svg) {
@@ -876,13 +883,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     return;
   }; // end of circles mousedblclick
 
-  GraphCreator.prototype.circleClick = function (d3node, d) {
-    if (d.name == "branchComponent") {
-      this.insertTitleLinebreaks(d3node, d);
-      this.updateGraph();
-    }
-    return;
-  }; // end of circles mouseclick
 
   /**** MAIN ****/
 
@@ -892,6 +892,9 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
   // };
 
   /** MAIN SVG CREATION **/
+  var translate = [0,0];
+  var scale = 1;
+
   var svg = d3.select("div#container").append("svg")
     .attr("width", "100%")
     .attr("height", "100%");
