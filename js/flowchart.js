@@ -312,7 +312,46 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         $('div.json_data textarea').val(JSON.stringify(json));
       }
     });
+    //点击导出代码按钮
+    $('.editor-toolbar').on('click', '.save', function (event) {
+      $('div.json_data .header').text('导出代码');
+      $('.ui.modal').modal('show');
+      var codeStr = "";
+      var header = "#include<stdio.h>";
+      var mainFunc = "int main(){";
+      var currentLoc;
+      var nodes = thisGraph.nodes;
+      var edges = thisGraph.edges;
 
+      for (var i in nodes) {
+        console.log(nodes[i]);
+        //find the entrance of progran
+        if (nodes[i].name == "startComponent") {
+          currentLoc = i;
+        }
+      }
+
+      console.log(currentLoc);
+      console.log(edges[0]);
+
+      if (currentLoc) {
+        while (nodes[currentLoc].name != "endComponent") {
+          for (var j in edges) {
+            if (edges[j].source.id == currentLoc) {
+              if (edges[j].target.name != "endComponent") {
+                codeStr = codeStr + edges[j].target.title.toString() + "\n";
+              }
+              //console.log(edges[j].target.title);
+              currentLoc = edges[j].target.id;
+            }
+          }
+        }
+      }
+      
+      console.log(codeStr);
+      $('div.json_data textarea').val(codeStr);
+
+    });
   };
   //constant config
   GraphCreator.prototype.consts = {
@@ -622,7 +661,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           thisGraph.updateGraph();
         }
         break;
-    
+
       case consts.TAB_KEY:
         d3.event.preventDefault();
         if (selectedNode) {
@@ -643,9 +682,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
   // call to propagate changes to graph
   //update rectangle
   GraphCreator.prototype.updateGraph = function () {
-
-    console.log(translate);
-    console.log(scale);
 
     var thisGraph = this,
       consts = thisGraph.consts,
@@ -803,12 +839,12 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         thisGraph.circleDoubleClick.call(thisGraph, d3.select(this), d);
       })
       .call(thisGraph.drag);
-      // .attr("x", function (d) {
-      //     return (d.x - translate[0]) * scale;
-      //   })
-      // .attr("y", function (d) {
-      //     return (d.y - translate[1]) * scale;
-      //   });
+    // .attr("x", function (d) {
+    //     return (d.x - translate[0]) * scale;
+    //   })
+    // .attr("y", function (d) {
+    //     return (d.y - translate[1]) * scale;
+    //   });
     //add circle
     // newGs.append("circle")
     //   .attr("r", String(consts.nodeRadius));
@@ -892,7 +928,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
   // };
 
   /** MAIN SVG CREATION **/
-  var translate = [0,0];
+  var translate = [0, 0];
   var scale = 1;
 
   var svg = d3.select("div#container").append("svg")
