@@ -585,7 +585,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           thisGraph.removeSelectFromNode();
           thisGraph.replaceSelectNode(d3node, d);
         } else {
-          // thisGraph.removeSelectFromNode();
+          thisGraph.removeSelectFromNode();
         }
 
       } else {
@@ -697,6 +697,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     var thisGraph = this,
       consts = thisGraph.consts,
       state = thisGraph.state;
+
     thisGraph.paths = thisGraph.paths.data(thisGraph.edges, function (d) {
       return String(d.source.id) + "+" + String(d.target.id);
     });
