@@ -347,7 +347,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           }
         }
       }
-      
+
       console.log(codeStr);
       $('div.json_data textarea').val(codeStr);
 
@@ -559,8 +559,19 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         source: mouseDownNode,
         target: d
       };
+      var edgeisPush = true;
+      thisGraph.paths.each(function (d) {
+        if ((d.source === newEdge.source && d.target === newEdge.target) ||
+          (d.source === newEdge.target && d.target === newEdge.source)) {
+          edgeisPush = false;
+          return;
+        }
+      });
 
-      thisGraph.edges.push(newEdge);
+      if (edgeisPush) {
+        thisGraph.edges.push(newEdge);
+      }
+
       thisGraph.updateGraph();
     } else {
       // we're in the same node
@@ -686,7 +697,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     var thisGraph = this,
       consts = thisGraph.consts,
       state = thisGraph.state;
-
     thisGraph.paths = thisGraph.paths.data(thisGraph.edges, function (d) {
       return String(d.source.id) + "+" + String(d.target.id);
     });
@@ -839,15 +849,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         thisGraph.circleDoubleClick.call(thisGraph, d3.select(this), d);
       })
       .call(thisGraph.drag);
-    // .attr("x", function (d) {
-    //     return (d.x - translate[0]) * scale;
-    //   })
-    // .attr("y", function (d) {
-    //     return (d.y - translate[1]) * scale;
-    //   });
-    //add circle
-    // newGs.append("circle")
-    //   .attr("r", String(consts.nodeRadius));
 
     newGs.append("path")
       .attr("d", function (d) {
