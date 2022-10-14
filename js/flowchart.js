@@ -321,8 +321,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       $('div.json_data .header').text('导出代码');
       $('.ui.modal').modal('show');
       var code = "";
-      var header = "#include<stdio.h>";
-      var mainFunc = "int main(){";
+      var header = "#include<bits/stdc++.h>";
       var currentNode;
       var nodes = thisGraph.nodes;
       var edges = thisGraph.edges;
@@ -341,7 +340,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           for (var i in edges) {
             if (edges[i].source.id == currentNode.id) {
               if (edges[i].target.name != "endComponent") {
-                codeStr = codeStr + edges[i].target.title.toString();
+                codeStr = codeStr + edges[i].target.title.toString().replace("\n","") + ";\n";
               }
 
               for (var j in nodes) {
@@ -399,7 +398,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           for (var i in edges) {
             if (edges[i].source.id == trueBranch.id) {
               if (trueBranch.name != "connecterComponent") {
-               trueStr = trueStr + trueBranch.title.toString();
+               trueStr = trueStr + trueBranch.title.toString().replace("\n", "") + ";\n";
               }
               
               for (var j in nodes) {
@@ -424,7 +423,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           for (var i in edges) {
             if (edges[i].source.id == falseBranch.id) {
               if (falseBranch.name != "connecterComponent") {
-               falseStr = falseStr + falseBranch.title.toString();
+               falseStr = falseStr + falseBranch.title.toString().replace("\n", "")+";\n";
               }
               
               for (var j in nodes) {
@@ -438,7 +437,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           }
         }
 
-        var codeifBranchStr = `if( ${branchStr} )\n{\n${trueStr}\n}\nelse\n{\n${falseStr}\n}\n`;
+        var codeifBranchStr = `if( ${branchStr} ){\n${trueStr}\n}\nelse{\n${falseStr}\n}`;
         currentNode = trueBranch;
 
         return codeifBranchStr; 
@@ -452,7 +451,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         }
       }
 
-      code = code + dumpOrdinaryCode();
+      code = `${header}\nint main(){\n${dumpOrdinaryCode()}\nreturn 0;\n}`;
 
 
       console.log(code);
