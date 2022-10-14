@@ -7,8 +7,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     console.log('thisGraph:');
     console.log(thisGraph);
 
-    thisGraph.idct = 0;
-
     thisGraph.nodes = nodes || [];
     thisGraph.edges = edges || [];
 
@@ -227,7 +225,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         shapeId = shapename + new Date().getTime();
 
       var d = {
-        id: thisGraph.idct++,
+        id: generateUUID(),
         title: shapeLabel,
         x: position.x,
         y: position.y,
@@ -269,10 +267,15 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           onApprove: function () {
             if (isImport) {
               var jsonStr = $('div.json_data textarea').val();
+
+              thisGraph.nodes = [];
+              thisGraph.edges = [];
+
               if (jsonStr) {
                 var json = JSON.parse(jsonStr);
                 var edges = [];
                 var nodes = json.nodes;
+
                 for (var i in json.edges) {
                   var source = json.edges[i].source.id;
                   var target = json.edges[i].target.id;
@@ -290,6 +293,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
                 }
                 thisGraph.nodes = thisGraph.nodes.concat(nodes);
                 thisGraph.edges = thisGraph.edges.concat(edges);
+                graph.updateGraph();
                 graph.updateGraph();
               }
             }
@@ -316,40 +320,143 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     $('.editor-toolbar').on('click', '.save', function (event) {
       $('div.json_data .header').text('导出代码');
       $('.ui.modal').modal('show');
-      var codeStr = "";
+      var code = "";
       var header = "#include<stdio.h>";
       var mainFunc = "int main(){";
-      var currentLoc;
+      var currentNode;
       var nodes = thisGraph.nodes;
       var edges = thisGraph.edges;
+
+
+      function dumpOrdinaryCode() {
+        var codeStr = "";
+
+        while (currentNode.name != "endComponent") {
+          //if we are in if branch
+          if (currentNode.name == "branchComponent" && currentNode.state == 0) {
+            console.log("fuck");
+            codeStr = codeStr + dumpifBranchCode();
+          }
+
+          for (var i in edges) {
+            if (edges[i].source.id == currentNode.id) {
+              if (edges[i].target.name != "endComponent") {
+                codeStr = codeStr + edges[i].target.title.toString();
+              }
+
+              for (var j in nodes) {
+                if (nodes[j].id == edges[i].target.id) {
+                  currentNode = nodes[j];
+                  break;
+                }
+              }
+              break;
+            }
+          }
+        }
+
+        return codeStr;
+      }
+
+      function dumpifBranchCode() {
+        //TODO: Fix this
+        console.log("we are in if branch");
+        var trueBranch;
+        var falseBranch;
+        var branchStr = currentNode.title.toString().replace('\n','');
+
+        for (var i in edges) {
+          if (edges[i].source.id == currentNode.id) {
+            //trueBranch
+            if (edges[i].target.x < edges[i].source.x) {
+              for (var j in nodes) {
+                if (nodes[j].id == edges[i].target.id) {
+                  trueBranch = nodes[j];
+                  break;
+                }
+              }
+            }
+            //falseBranch
+            else {
+              for (var j in nodes) {
+                if (nodes[j].id == edges[i].target.id) {
+                  falseBranch = nodes[j];
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        var trueStr = "";
+        while (trueBranch.name != "connecterComponent") {
+          if (trueBranch.name == "branchComponent" && trueBranch.state == 0) {
+            currentNode = trueBranch;
+            trueStr = trueStr + dumpifBranchCode();
+            trueBranch = currentNode;
+          }
+
+          for (var i in edges) {
+            if (edges[i].source.id == trueBranch.id) {
+              if (trueBranch.name != "connecterComponent") {
+               trueStr = trueStr + trueBranch.title.toString();
+              }
+              
+              for (var j in nodes) {
+                if (nodes[j].id == edges[i].target.id) {
+                  trueBranch = nodes[j];
+                  break;
+                }
+              }
+              break;
+            }
+          }
+        }
+
+        var falseStr = "";
+        while (falseBranch.name != "connecterComponent") {
+          if (falseBranch.name == "branchComponent" && falseBranch.state == 0) {
+            currentNode = falseBranch;
+            falseStr = falseStr + dumpifBranchCode();
+            falseBranch = currentNode;
+          }
+
+          for (var i in edges) {
+            if (edges[i].source.id == falseBranch.id) {
+              if (falseBranch.name != "connecterComponent") {
+               falseStr = falseStr + falseBranch.title.toString();
+              }
+              
+              for (var j in nodes) {
+                if (nodes[j].id == edges[i].target.id) {
+                  falseBranch = nodes[j];
+                  break;
+                }
+              }
+              break;
+            }
+          }
+        }
+
+        var codeifBranchStr = `if( ${branchStr} )\n{\n${trueStr}\n}\nelse\n{\n${falseStr}\n}\n`;
+        currentNode = trueBranch;
+
+        return codeifBranchStr; 
+      }
 
       for (var i in nodes) {
         console.log(nodes[i]);
         //find the entrance of progran
         if (nodes[i].name == "startComponent") {
-          currentLoc = i;
+          currentNode = nodes[i];
         }
       }
 
-      console.log(currentLoc);
-      console.log(edges[0]);
+      code = code + dumpOrdinaryCode();
 
-      if (currentLoc) {
-        while (nodes[currentLoc].name != "endComponent") {
-          for (var j in edges) {
-            if (edges[j].source.id == currentLoc) {
-              if (edges[j].target.name != "endComponent") {
-                codeStr = codeStr + edges[j].target.title.toString() + "\n";
-              }
-              //console.log(edges[j].target.title);
-              currentLoc = edges[j].target.id;
-            }
-          }
-        }
-      }
 
-      console.log(codeStr);
-      $('div.json_data textarea').val(codeStr);
+      console.log(code);
+      $('div.json_data textarea').val(code);
 
     });
   };
@@ -628,7 +735,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       // clicked not dragged from svg
       var xycoords = d3.mouse(thisGraph.svgG.node()),
         d = {
-          id: thisGraph.idct++,
+          id: generateUUID(),
           title: "",
           x: xycoords[0],
           y: xycoords[1],
