@@ -337,11 +337,9 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           if (currentNode.name == "branchComponent") {
             if (currentNode.state == 0) {
               codeStr = codeStr + dumpifBranchCode();
-            }
-            else if (currentNode.state == 1) {
+            } else if (currentNode.state == 1) {
               codeStr = codeStr + dumpwhileBranchCode();
-            }
-            else if (currentNode.state == 2) {
+            } else if (currentNode.state == 2) {
               codeStr = codeStr + dumpdowhileBranchCode();
             }
           }
@@ -351,13 +349,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
               if (currentNode.name != "startComponent" && currentNode.name != "connecterComponent") {
                 codeStr = codeStr + indentation(tab) + currentNode.title.toString().replace("\n", "") + ";\n";
               }
-
-              for (var j in nodes) {
-                if (nodes[j].id == edges[i].target.id) {
-                  currentNode = nodes[j];
-                  break;
-                }
-              }
+              currentNode = edges[i].target;
               break;
             }
           }
@@ -377,21 +369,11 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           if (edges[i].source.id == currentNode.id) {
             //trueBranch
             if (edges[i].target.x < edges[i].source.x) {
-              for (var j in nodes) {
-                if (nodes[j].id == edges[i].target.id) {
-                  trueBranch = nodes[j];
-                  break;
-                }
-              }
+              trueBranch = edges[i].target;
             }
             //falseBranch
             else {
-              for (var j in nodes) {
-                if (nodes[j].id == edges[i].target.id) {
-                  falseBranch = nodes[j];
-                  break;
-                }
-              }
+              falseBranch = edges[i].target;
             }
           }
         }
@@ -403,13 +385,11 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
               currentNode = trueBranch;
               trueStr = trueStr + dumpifBranchCode();
               trueBranch = currentNode;
-            }
-            else if (trueBranch.state == 1) {
+            } else if (trueBranch.state == 1) {
               currentNode = trueBranch;
               trueStr = trueStr + dumpwhileBranchCode();
               trueBranch = currentNode;
-            }
-            else if (trueBranch.state == 2) {
+            } else if (trueBranch.state == 2) {
               currentNode = trueBranch;
               trueStr = trueStr + dumpdowhileBranchCode();
               trueBranch = currentNode;
@@ -421,13 +401,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
               if (trueBranch.name != "connecterComponent") {
                 trueStr = trueStr + indentation(tab) + trueBranch.title.toString().replace("\n", "") + ";\n";
               }
-
-              for (var j in nodes) {
-                if (nodes[j].id == edges[i].target.id) {
-                  trueBranch = nodes[j];
-                  break;
-                }
-              }
+              trueBranch = edges[i].target;
               break;
             }
           }
@@ -440,13 +414,11 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
               currentNode = falseBranch;
               falseStr = falseStr + dumpifBranchCode();
               falseBranch = currentNode;
-            }
-            else if (falseBranch.state == 1) {
+            } else if (falseBranch.state == 1) {
               currentNode = falseBranch;
               falseStr = falseStr + dumpwhileBranchCode();
               falseBranch = currentNode;
-            }
-            else if (falseBranch.state ==2) {
+            } else if (falseBranch.state == 2) {
               currentNode = falseBranch;
               falseStr = falseStr + dumpdowhileBranchCode();
               falseBranch = currentNode;
@@ -458,13 +430,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
               if (falseBranch.name != "connecterComponent") {
                 falseStr = falseStr + indentation(tab) + falseBranch.title.toString().replace("\n", "") + ";\n";
               }
-
-              for (var j in nodes) {
-                if (nodes[j].id == edges[i].target.id) {
-                  falseBranch = nodes[j];
-                  break;
-                }
-              }
+              falseBranch = edges[i].target;
               break;
             }
           }
@@ -477,6 +443,66 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       }
 
       function dumpwhileBranchCode() {
+        tab = tab + 1;
+        var branchNode = currentNode;
+        var branchStr = branchNode.title.toString().replace("\n", "");
+        var trueBranch = null;
+        var falseBranch = null;
+
+        for (var i in edges) {
+          if (edges[i].source.id == currentNode.id) {
+            if (!trueBranch) {
+              trueBranch = edges[i].target;
+            } else if (!falseBranch) {
+              falseBranch = edges[i].target;
+              break;
+            }
+          }
+        }
+
+        if (trueBranch.y > falseBranch.y) {
+          var tempNode = trueBranch;
+          trueBranch = falseBranch;
+          falseBranch = tempNode;
+          tempNode = null;
+        }
+
+        var trueStr = "";
+
+        while (trueBranch != branchNode) {
+          if (trueBranch.name == "branchComponent") {
+            if (trueBranch.state == 0) {
+              currentNode = trueBranch;
+              trueStr = trueStr + dumpifBranchCode();
+              trueBranch = currentNode;
+            } else if (trueBranch.state == 1) {
+              currentNode = trueBranch;
+              trueStr = trueStr + dumpwhileBranchCode();
+              trueBranch = currentNode;
+            } else if (trueBranch.state == 2) {
+              currentNode = trueBranch;
+              trueStr = trueStr + dumpdowhileBranchCode();
+              trueBranch = currentNode;
+            }
+          }
+
+          for (var i in edges) {
+            if (edges[i].source.id == trueBranch.id) {
+              if (trueBranch != branchNode) {
+                trueStr = trueStr + indentation(tab) + trueBranch.title.toString().replace("\n", "") + ";\n";
+              }
+              trueBranch = edges[i].target;
+              break;
+            }
+          }
+        }
+
+        tab = tab - 1;
+        currentNode = falseBranch;
+        return `${indentation(tab)}while( ${branchStr} ){\n${trueStr}${indentation(tab)}}\n`;
+      }
+
+      function dumpdowhileBranchCode() {
         tab = tab + 1;
         var branchNode = currentNode;
         var branchStr = branchNode.title.toString().replace("\n", "");
@@ -523,13 +549,11 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
               currentNode = trueBranch;
               trueStr = trueStr + dumpifBranchCode();
               trueBranch = currentNode;
-            }
-            else if (trueBranch.state == 1) {
+            } else if (trueBranch.state == 1) {
               currentNode = trueBranch;
               trueStr = trueStr + dumpwhileBranchCode();
               trueBranch = currentNode;
-            }
-            else if (trueBranch.state == 2) {
+            } else if (trueBranch.state == 2) {
               currentNode = trueBranch;
               trueStr = trueStr + dumpdowhileBranchCode();
               trueBranch = currentNode;
@@ -555,12 +579,9 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
         tab = tab - 1;
         currentNode = falseBranch;
-        return `${indentation(tab)}while( ${branchStr} ){\n${trueStr}${indentation(tab)}}\n`;
+        return `${indentation(tab)}do{\n${trueStr}${indentation(tab)}}while( ${branchStr} )\n`;
       }
 
-      function dumpdowhileBranchCode() {
-        
-      }
 
 
       for (var i in nodes) {
