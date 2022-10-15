@@ -339,9 +339,11 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
               codeStr = codeStr + dumpifBranchCode();
             } else if (currentNode.state == 1) {
               codeStr = codeStr + dumpwhileBranchCode();
-            } else if (currentNode.state == 2) {
-              codeStr = codeStr + dumpdowhileBranchCode();
             }
+          }
+          //if we are in do-while branch
+          if (currentNode.state == 10) {
+            codeStr = codeStr + dumpdowhileBranchCode();
           }
 
           for (var i in edges) {
@@ -389,11 +391,12 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
               currentNode = trueBranch;
               trueStr = trueStr + dumpwhileBranchCode();
               trueBranch = currentNode;
-            } else if (trueBranch.state == 2) {
-              currentNode = trueBranch;
-              trueStr = trueStr + dumpdowhileBranchCode();
-              trueBranch = currentNode;
             }
+          }
+          if (trueBranch.state == 10) {
+            currentNode = trueBranch;
+            trueStr = trueStr + dumpdowhileBranchCode();
+            trueBranch = currentNode;
           }
 
           for (var i in edges) {
@@ -418,11 +421,12 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
               currentNode = falseBranch;
               falseStr = falseStr + dumpwhileBranchCode();
               falseBranch = currentNode;
-            } else if (falseBranch.state == 2) {
-              currentNode = falseBranch;
-              falseStr = falseStr + dumpdowhileBranchCode();
-              falseBranch = currentNode;
             }
+          }
+          if (falseBranch.state == 10) {
+            currentNode = falseBranch;
+            falseStr = falseStr + dumpdowhileBranchCode();
+            falseBranch = currentNode;
           }
 
           for (var i in edges) {
@@ -479,11 +483,13 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
               currentNode = trueBranch;
               trueStr = trueStr + dumpwhileBranchCode();
               trueBranch = currentNode;
-            } else if (trueBranch.state == 2) {
-              currentNode = trueBranch;
-              trueStr = trueStr + dumpdowhileBranchCode();
-              trueBranch = currentNode;
             }
+          }
+
+          if (trueBranch.state == 10) {
+            currentNode = trueBranch;
+            trueStr = trueStr + dumpdowhileBranchCode();
+            trueBranch = currentNode;
           }
 
           for (var i in edges) {
@@ -505,45 +511,13 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       function dumpdowhileBranchCode() {
         tab = tab + 1;
         var branchNode = currentNode;
-        var branchStr = branchNode.title.toString().replace("\n", "");
-        var trueBranch;
+        var trueBranch = branchNode;
         var falseBranch;
-
-        for (var i in edges) {
-          //find first node
-          if (edges[i].source.id == currentNode.id) {
-            for (var j in nodes) {
-              if (nodes[j].id == edges[i].target.id) {
-                trueBranch = nodes[j];
-              }
-            }
-
-            for (var j in edges) {
-              //find second node
-              if (j != i && edges[j].source.id == currentNode.id) {
-                for (var k in nodes) {
-                  if (nodes[k].id == edges[j].target.id) {
-                    falseBranch = nodes[k];
-                    break;
-                  }
-                }
-                break;
-              }
-            }
-            break;
-          }
-        }
-
-        if (trueBranch.y > falseBranch.y) {
-          var tempNode = trueBranch;
-          trueBranch = falseBranch;
-          falseBranch = tempNode;
-          tempNode = null;
-        }
-
         var trueStr = "";
+        var isContinue = true;
+        var branchStr;
 
-        while (trueBranch != branchNode) {
+        while (isContinue) {
           if (trueBranch.name == "branchComponent") {
             if (trueBranch.state == 0) {
               currentNode = trueBranch;
@@ -554,20 +528,37 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
               trueStr = trueStr + dumpwhileBranchCode();
               trueBranch = currentNode;
             } else if (trueBranch.state == 2) {
-              currentNode = trueBranch;
-              trueStr = trueStr + dumpdowhileBranchCode();
-              trueBranch = currentNode;
+              for (var i in edges) {
+                if (edges[i].source == trueBranch) {
+                  if (edges[i].target == branchNode) {
+                    isContinue = false;
+                    for (var j in edges) {
+                      if (j != i && edges[j].source == trueBranch) {
+                        falseBranch = edges[j].target;
+                      }
+                    }
+                    branchStr = trueBranch.title.toString().replace("\n", "");
+                    break;
+                  }
+                }
+              }
             }
+          }
+          
+          if (!isContinue) break;
+
+          if (trueBranch != branchNode && trueBranch.state == 10) {
+            currentNode = trueBranch;
+            trueStr = trueStr + dumpdowhileBranchCode();
+            trueBranch = currentNode;
           }
 
           for (var i in edges) {
-            if (edges[i].source.id == trueBranch.id) {
-              if (trueBranch != branchNode) {
-                trueStr = trueStr + indentation(tab) + trueBranch.title.toString().replace("\n", "") + ";\n";
-              }
+            if (edges[i].source == trueBranch) {
+              trueStr = trueStr + indentation(tab) + trueBranch.title.toString().replace("\n", "") + ";\n";
 
               for (var j in nodes) {
-                if (nodes[j].id == edges[i].target.id) {
+                if (edges[i].target == nodes[j]) {
                   trueBranch = nodes[j];
                   break;
                 }
@@ -981,12 +972,14 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           else if (d.source.state == 2) {
             //在上方
             if (d.target.y < d.source.y) {
+              d.target.state = 10;
               return "M" + d.source.x + "," + d.source.y +
                 "L" + (d.source.x - 180) + "," + d.source.y +
                 "L" + (d.source.x - 180) + "," + (d.target.y - 100) +
                 "L" + d.target.x + "," + (d.target.y - 100) +
                 "L" + d.target.x + "," + d.target.y;
             } else {
+              d.target.state = 0;
               return "M" + d.source.x + "," + d.source.y +
                 "L" + d.target.x + "," + d.source.y +
                 "L" + d.target.x + "," + d.target.y;
