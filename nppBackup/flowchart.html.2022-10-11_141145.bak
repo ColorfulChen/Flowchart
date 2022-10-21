@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>flowChart</title>
+	<!-- <link rel="stylesheet" type="text/css" href="css/style.css" /> -->
+	<link type="text/css" href="css/Semantic-UI-CSS-master/semantic.min.css" rel="stylesheet">
+	<link type="text/css" href="css/graph-creator.css" rel="stylesheet" />
+	<link type="text/css" href="css/flow_zyl.css" rel="stylesheet" />
+	<link type="text/css" href="css/jquery.mCustomScrollbar.css" rel="stylesheet">
+</head>
+
+<body>
+	<div class="subheader editor-toolbar">
+		<div class="column"><i class="save icon"></i></div>
+		<div class="divider"></div>
+		<div class="column"><i class="cut icon"></i></div>
+		<div class="column"><i class="copy icon"></i></div>
+		<div class="column"><i class="paste icon"></i></div>
+		<div class="column" id="delete-graph"><i class="trash icon"></i></div>
+		<div class="divider"></div>
+		<div class="column"><i class="repeat icon"></i></div>
+		<div class="column"><i class="undo icon"></i></div>
+		<div class="divider"></div>
+		<div class="column"><i class="zoom icon"></i></div>
+		<div class="column"><i class="zoom out icon"></i></div>
+		<div class="column" id="reset-zoom"><i class="maximize icon"></i></div>
+
+	</div>
+	<div class="full">
+		<div id="flowComponents" class="full-left">
+			<div class="components-btn noComponent clearfix" name="selectBtn">
+				<div><img id="img" src="icons/startevent/none.png"></i><span>选择</span></div>
+			</div>
+			<div class="components-btn" name="startComponent" for-name="path">
+				<img id="img" src="icons/startevent/none.png" /><span>开始</span>
+			</div>
+			<div class="clearfix"></div>
+			<div class="components-btn" name="activityComponent" for-name="path">
+				<img src="icons/activity/list/type.user.png"><span>流程</span>
+			</div>
+			<div class="clearfix"></div>
+			<div class="components-btn" name="branchComponent" for-name="path">
+				<img src="icons/activity/list/type.user.png"><span>判定</span>
+			</div>
+			<div class="clearfix"></div>
+			<div class="clearfix"></div>
+			<div class="components-btn" name="connecterComponent" for-name="path">
+				<img src="icons/activity/list/type.user.png"><span>连接点</span>
+			</div>
+			<div class="clearfix"></div>
+			<div class="components-btn" name="pageconnecterComponent" for-name="path">
+				<img src="icons/activity/list/type.user.png"><span>页面链接点</span>
+			</div>
+			<div class="clearfix"></div>
+			<div class="components-btn" name="databaseComponent" for-name="path">
+				<img src="icons/activity/list/type.user.png"><span>数据库</span>
+			</div>
+			<div class="clearfix"></div>
+			<div class="components-btn" name="fileComponent" for-name="path">
+				<img src="icons/activity/list/type.user.png"><span>文件</span>
+			</div>
+			<div class="components-btn" name="endComponent" for-name="path">
+				<img src="icons/endevent/none.png"><span>结束</span>
+			</div>
+			<div class="clearfix"></div>
+			<div class="components-btn noComponent" name="drawLineBtn" for-name="line">
+				<img src="icons/connector/sequenceflow.png"><span>线</span>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+		<div class="full-right tab">
+			<div id="container" class="ui top attached tab active full-right-top view" data-tab="first"></div>
+		</div>
+	</div>
+
+	<script type="text/javascript" src="js/jquery.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/jquery-ui-1.9.2.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/d3.v3.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/flowchart.js" charset="utf-8"></script>
+	<script type="text/javascript" src="js/juicer-min.js"></script>
+	<script type="text/javascript" src="js/semantic/semantic.js"></script>
+	<script type="text/javascript" src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+
+	<script>
+		juicer.set({
+			'tag::operationOpen': '{@',
+			'tag::operationClose': '}',
+			'tag::interpolateOpen': '{{=',
+			'tag::interpolateClose': '}}'
+		});
+	</script>
+
+	<script id="tpl" type="text/template">
+		<activity Id="{{=activity.id}}" Name="{{=activity.title}}" form-id="" formdisplayschema="" hisformdisplayschema="">
+	        <operations/>
+	        <text-limit/>
+	    </activity>
+	       
+	</script>
+
+
+</body>
+
+</html>
