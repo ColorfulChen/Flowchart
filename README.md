@@ -1,5 +1,8 @@
-An online Flowchart Generator to easily build your own flowchart online.
-Live Demo:http://101.42.248.14:800/flowchart_eng.html
+- Live Demo:
+- English_ver:http://101.42.248.14:800/flowchart_eng.html
+- Chinese_ver:http://101.42.248.14:800/flowchart.html
+
+An online Flowchart Generator to easily build your own flowchart online.developed on jquery.js,d3.js,semantic.css, and https://github.com/zhangyuanliang/flow-chart/.
 
 Features:
 - 1.Generate activity block by draging blocks into graph.
