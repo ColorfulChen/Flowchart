@@ -904,6 +904,9 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           thisGraph.updateGraph();
           // thisGraph.
         } else if (selectedEdge) {
+          if (selectedEdge.source.name == "branchComponent"&&selectedEdge.source.state==2) {
+            selectedEdge.target.state = 0;
+          }
           thisGraph.edges.splice(thisGraph.edges.indexOf(selectedEdge), 1);
           state.selectedEdge = null;
           thisGraph.updateGraph();
