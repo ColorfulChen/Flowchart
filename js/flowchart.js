@@ -784,8 +784,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
         code = `${header}\nint main(){\n${dumpCode()}\treturn 0;\n}`;
 
-      }
-      else {
+      } else {
         code = `Error!\n${code}`;
       }
       console.log(code);
@@ -806,6 +805,13 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
 
     });
 
+    $('.editor-toolbar').on('click', '.align.justify', function (event) {
+
+    });
+
+    $('.editor-toolbar').on('click', '.star', function (event) {
+      window.open('https://github.com/MrChenYukun/onlineFlowchartGenerator');
+    });
   };
   //constant config
   GraphCreator.prototype.consts = {
