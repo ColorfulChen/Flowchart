@@ -139,6 +139,32 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       translate = [0, 0];
     });
 
+    // d3.select("#zoom-in").on("click", function () {
+    //   d3.select(".graph")
+    //     .transition() // start a transition
+    //     .duration(1000) // make it last 1 second
+    //     .attr('transform', "translate(1,0)");
+
+    //   scale = scale + 0.1;
+    //   dragSvg.scale(scale);
+    //   dragSvg.translate([1, 0]);
+    //   translate = [0, 0];
+    //   thisGraph.zoomed.call(thisGraph)
+    // });
+
+    // d3.select("#zoom-out").on("click", function () {
+    //   d3.select(".graph")
+    //     .transition() // start a transition
+    //     .duration(1000) // make it last 1 second
+    //     .attr('transform', "translate(1,0)");
+
+    //   scale = scale - 0.1;
+    //   dragSvg.scale(scale);
+    //   dragSvg.translate([1, 0]);
+    //   translate = [0, 0];
+    //   thisGraph.zoomed.call(thisGraph)
+    // });
+
     // handle download data
     d3.select("#download-input").on("click", function () {
       var saveEdges = [];
@@ -239,6 +265,177 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
       ev.preventDefault();
       console.log('drag over');
     });
+
+    function judgeGraph() {
+      var errMessage = "";
+
+      var nodes = thisGraph.nodes;
+      var edges = thisGraph.edges;
+
+      var start = 0; //check start component
+      var end = 0; //check end component
+
+      for (var i in nodes) {
+        if (nodes[i].name == "startComponent") {
+          start++;
+        } else if (nodes[i].name == "endComponent") {
+          end++;
+        }
+      }
+
+      if (start != 1) {
+        if (start < 1) {
+          errMessage = errMessage + "Missing Start Component!\n";
+        } else {
+          errMessage = errMessage + "More than 1 Start Component was created!\n";
+        }
+      }
+
+      if (end != 1) {
+        if (end < 1) {
+          errMessage += "Missing End Component!\n";
+        } else {
+          errMessage += "More than 1 End Component was created!\n";
+        }
+      }
+
+      function getInOut(curnode) {
+        var inout = [0, 0];
+        inout[0] = 0;
+        inout[1] = 0;
+
+        for (var j in edges) {
+          if (edges[j].source.id == nodes[curnode].id) {
+            inout[0]++;
+          }
+          if (edges[j].target.id == nodes[curnode].id) {
+            inout[1]++;
+          }
+        }
+
+        return inout;
+      }
+
+      function judgestartComponent() {
+        if (edgeinout[0] != 1) {
+          if (edgeinout[0] < 1) {
+            errMessage += `${nodes[i].name} does not connect to components!\n`;
+          } else {
+            errMessage += `${nodes[i].name} Link to more than 1 components!\n`;
+          }
+        }
+
+        if (edgeinout[1] > 0) {
+          errMessage += `${nodes[i].name} can not be connected\n`;
+        }
+      }
+
+      function judgeendComponent() {
+        if (edgeinout[1] != 1) {
+          if (edgeinout[1] < 1) {
+            errMessage += `There are no component connect to ${nodes[i].name}!\n`;
+          } else {
+            errMessage += `There are more than 1 component connect to ${nodes[i].name}!\n`;
+          }
+        }
+
+        if (edgeinout[0] > 0) {
+          errMessage += `${nodes[i].name} can not connect to any component\n`;
+        }
+      }
+
+      function judgeordinaryComponent() {
+        if (edgeinout[1] != 1 && !(edgeinout[1] == 2 && nodes[i].state == 10)) {
+          if (edgeinout[1] < 1) {
+            errMessage += `There are no component connect to ${nodes[i].name} ${nodes[i].title}!\n`;
+          } else {
+            errMessage += `There are more than 1 component connect to ${nodes[i].name} ${nodes[i].title}!\n`;
+          }
+        }
+
+        if (edgeinout[0] != 1) {
+          if (edgeinout[0] < 1) {
+            errMessage += `${nodes[i].name} ${nodes[i].title} does not connect to components!\n`;
+          } else {
+            errMessage += `${nodes[i].name} ${nodes[i].title} Link to more than 1 components!\n`;
+          }
+        }
+      }
+
+      function judgeconnecterComponent() {
+        if (edgeinout[0] != 1) {
+          if (edgeinout[0] < 1) {
+            errMessage += `${nodes[i].name} ${nodes[i].title} does not connect to components!\n`;
+          } else {
+            errMessage += `${nodes[i].name} ${nodes[i].title} Link to more than 1 components!\n`;
+          }
+        }
+      }
+
+      function judgebranchComponent() {
+        if (edgeinout[1] != 1) {
+          if (edgeinout[1] < 1) {
+            errMessage += `There are no component connect to ${nodes[i].name} ${nodes[i].title}!\n`;
+          } else {
+            errMessage += `There are more than 1 component connect to ${nodes[i].name} ${nodes[i].title}!\n`;
+          }
+        }
+
+        if (edgeinout[0] != 2) {
+          if (edgeinout[0] < 2) {
+            errMessage += `${nodes[i].name} ${nodes[i].title} needs 2 edges connect to components!\n`;
+          } else {
+            errMessage += `${nodes[i].name} ${nodes[i].title} Link to more than 2 components!\n`;
+          }
+        }
+      }
+
+      var edgeinout;
+
+      for (var i in nodes) {
+        edgeinout = getInOut(i);
+
+        switch (nodes[i].name) {
+          case `startComponent`:
+            judgestartComponent();
+            break;
+
+          case `endComponent`:
+            judgeendComponent();
+            break;
+
+          case `activityComponent`:
+            judgeordinaryComponent();
+            break;
+
+          case `branchComponent`:
+            judgebranchComponent();
+            break;
+
+          case `connecterComponent`:
+            judgeconnecterComponent()
+            break;
+
+          case `pageconnecterComponent`:
+            judgeconnecterComponent()
+            break;
+
+          case `databaseComponent`:
+            judgestartComponent();
+            break;
+
+          case `fileComponent`:
+            judgestartComponent();
+            break;
+
+          default:
+            judgeordinaryComponent();
+        }
+      }
+
+      return errMessage;
+    }
+
     //选择左侧工具
     $('#flowComponents .components-btn').on('click', function () {
       $(this).siblings().removeClass('active').end().addClass('active');
@@ -320,276 +517,295 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     $('.editor-toolbar').on('click', '.save', function (event) {
       $('div.json_data .header').text('导出代码');
       $('.ui.modal').modal('show');
-      var code = "";
-      var header = "#include<bits/stdc++.h>";
-      var currentNode;
-      var nodes = thisGraph.nodes;
-      var edges = thisGraph.edges;
-      var tab = 0;
+
+      var code = judgeGraph();
+      if (!code) {
+        var header = "#include<bits/stdc++.h>";
+        var currentNode;
+        var nodes = thisGraph.nodes;
+        var edges = thisGraph.edges;
+        var tab = 0;
 
 
-      function dumpCode() {
-        var codeStr = "";
-        tab = tab + 1;
+        function dumpCode() {
+          var codeStr = "";
+          tab = tab + 1;
 
-        while (currentNode.name != "endComponent") {
-          //if we are in if branch
-          if (currentNode.name == "branchComponent") {
-            if (currentNode.state == 0) {
-              codeStr = codeStr + dumpifBranchCode();
-            } else if (currentNode.state == 1) {
-              codeStr = codeStr + dumpwhileBranchCode();
+          while (currentNode.name != "endComponent") {
+            //if we are in if branch
+            if (currentNode.name == "branchComponent") {
+              if (currentNode.state == 0) {
+                codeStr = codeStr + dumpifBranchCode();
+              } else if (currentNode.state == 1) {
+                codeStr = codeStr + dumpwhileBranchCode();
+              }
+            }
+            //if we are in do-while branch
+            if (currentNode.state == 10) {
+              codeStr = codeStr + dumpdowhileBranchCode();
+            }
+
+            for (var i in edges) {
+              if (edges[i].source.id == currentNode.id) {
+                if (currentNode.name != "startComponent" && currentNode.name != "connecterComponent") {
+                  codeStr = codeStr + indentation(tab) + currentNode.title.toString().replace("\n", "") + ";\n";
+                }
+                currentNode = edges[i].target;
+                break;
+              }
             }
           }
-          //if we are in do-while branch
-          if (currentNode.state == 10) {
-            codeStr = codeStr + dumpdowhileBranchCode();
-          }
+
+          tab = tab - 1;
+          return codeStr;
+        }
+
+        function dumpifBranchCode() {
+          tab = tab + 1;
+          var trueBranch;
+          var falseBranch;
+          var branchStr = currentNode.title.toString().replace('\n', '');
 
           for (var i in edges) {
             if (edges[i].source.id == currentNode.id) {
-              if (currentNode.name != "startComponent" && currentNode.name != "connecterComponent") {
-                codeStr = codeStr + indentation(tab) + currentNode.title.toString().replace("\n", "") + ";\n";
+              //trueBranch
+              if (edges[i].target.x < edges[i].source.x) {
+                trueBranch = edges[i].target;
               }
-              currentNode = edges[i].target;
-              break;
+              //falseBranch
+              else {
+                falseBranch = edges[i].target;
+              }
             }
           }
-        }
 
-        tab = tab - 1;
-        return codeStr;
-      }
-
-      function dumpifBranchCode() {
-        tab = tab + 1;
-        var trueBranch;
-        var falseBranch;
-        var branchStr = currentNode.title.toString().replace('\n', '');
-
-        for (var i in edges) {
-          if (edges[i].source.id == currentNode.id) {
-            //trueBranch
-            if (edges[i].target.x < edges[i].source.x) {
-              trueBranch = edges[i].target;
+          var trueStr = "";
+          while (trueBranch.name != "connecterComponent") {
+            if (trueBranch.name == "branchComponent") {
+              if (trueBranch.state == 0) {
+                currentNode = trueBranch;
+                trueStr = trueStr + dumpifBranchCode();
+                trueBranch = currentNode;
+              } else if (trueBranch.state == 1) {
+                currentNode = trueBranch;
+                trueStr = trueStr + dumpwhileBranchCode();
+                trueBranch = currentNode;
+              }
             }
-            //falseBranch
-            else {
-              falseBranch = edges[i].target;
-            }
-          }
-        }
-
-        var trueStr = "";
-        while (trueBranch.name != "connecterComponent") {
-          if (trueBranch.name == "branchComponent") {
-            if (trueBranch.state == 0) {
+            if (trueBranch.state == 10) {
               currentNode = trueBranch;
-              trueStr = trueStr + dumpifBranchCode();
-              trueBranch = currentNode;
-            } else if (trueBranch.state == 1) {
-              currentNode = trueBranch;
-              trueStr = trueStr + dumpwhileBranchCode();
+              trueStr = trueStr + dumpdowhileBranchCode();
               trueBranch = currentNode;
             }
-          }
-          if (trueBranch.state == 10) {
-            currentNode = trueBranch;
-            trueStr = trueStr + dumpdowhileBranchCode();
-            trueBranch = currentNode;
-          }
 
-          for (var i in edges) {
-            if (edges[i].source.id == trueBranch.id) {
-              if (trueBranch.name != "connecterComponent") {
-                trueStr = trueStr + indentation(tab) + trueBranch.title.toString().replace("\n", "") + ";\n";
+            for (var i in edges) {
+              if (edges[i].source.id == trueBranch.id) {
+                if (trueBranch.name != "connecterComponent") {
+                  trueStr = trueStr + indentation(tab) + trueBranch.title.toString().replace("\n", "") + ";\n";
+                }
+                trueBranch = edges[i].target;
+                break;
               }
-              trueBranch = edges[i].target;
-              break;
             }
           }
-        }
 
-        var falseStr = "";
-        while (falseBranch.name != "connecterComponent") {
-          if (falseBranch.name == "branchComponent") {
-            if (falseBranch.state == 0) {
+          var falseStr = "";
+          while (falseBranch.name != "connecterComponent") {
+            if (falseBranch.name == "branchComponent") {
+              if (falseBranch.state == 0) {
+                currentNode = falseBranch;
+                falseStr = falseStr + dumpifBranchCode();
+                falseBranch = currentNode;
+              } else if (falseBranch.state == 1) {
+                currentNode = falseBranch;
+                falseStr = falseStr + dumpwhileBranchCode();
+                falseBranch = currentNode;
+              }
+            }
+            if (falseBranch.state == 10) {
               currentNode = falseBranch;
-              falseStr = falseStr + dumpifBranchCode();
-              falseBranch = currentNode;
-            } else if (falseBranch.state == 1) {
-              currentNode = falseBranch;
-              falseStr = falseStr + dumpwhileBranchCode();
+              falseStr = falseStr + dumpdowhileBranchCode();
               falseBranch = currentNode;
             }
+
+            for (var i in edges) {
+              if (edges[i].source.id == falseBranch.id) {
+                if (falseBranch.name != "connecterComponent") {
+                  falseStr = falseStr + indentation(tab) + falseBranch.title.toString().replace("\n", "") + ";\n";
+                }
+                falseBranch = edges[i].target;
+                break;
+              }
+            }
           }
-          if (falseBranch.state == 10) {
-            currentNode = falseBranch;
-            falseStr = falseStr + dumpdowhileBranchCode();
-            falseBranch = currentNode;
-          }
+
+          tab = tab - 1;
+          currentNode = trueBranch;
+
+          return `${indentation(tab)}if( ${branchStr} ){\n${trueStr}${indentation(tab)}}\n${indentation(tab)}else{\n${falseStr}${indentation(tab)}}\n`
+        }
+
+        function dumpwhileBranchCode() {
+          tab = tab + 1;
+          var branchNode = currentNode;
+          var branchStr = branchNode.title.toString().replace("\n", "");
+          var trueBranch = null;
+          var falseBranch = null;
 
           for (var i in edges) {
-            if (edges[i].source.id == falseBranch.id) {
-              if (falseBranch.name != "connecterComponent") {
-                falseStr = falseStr + indentation(tab) + falseBranch.title.toString().replace("\n", "") + ";\n";
+            if (edges[i].source.id == currentNode.id) {
+              if (!trueBranch) {
+                trueBranch = edges[i].target;
+              } else if (!falseBranch) {
+                falseBranch = edges[i].target;
+                break;
               }
-              falseBranch = edges[i].target;
-              break;
-            }
-          }
-        }
-
-        tab = tab - 1;
-        currentNode = trueBranch;
-
-        return `${indentation(tab)}if( ${branchStr} ){\n${trueStr}${indentation(tab)}}\n${indentation(tab)}else{\n${falseStr}${indentation(tab)}}\n`
-      }
-
-      function dumpwhileBranchCode() {
-        tab = tab + 1;
-        var branchNode = currentNode;
-        var branchStr = branchNode.title.toString().replace("\n", "");
-        var trueBranch = null;
-        var falseBranch = null;
-
-        for (var i in edges) {
-          if (edges[i].source.id == currentNode.id) {
-            if (!trueBranch) {
-              trueBranch = edges[i].target;
-            } else if (!falseBranch) {
-              falseBranch = edges[i].target;
-              break;
-            }
-          }
-        }
-
-        if (trueBranch.y > falseBranch.y) {
-          var tempNode = trueBranch;
-          trueBranch = falseBranch;
-          falseBranch = tempNode;
-          tempNode = null;
-        }
-
-        var trueStr = "";
-
-        while (trueBranch != branchNode) {
-          if (trueBranch.name == "branchComponent") {
-            if (trueBranch.state == 0) {
-              currentNode = trueBranch;
-              trueStr = trueStr + dumpifBranchCode();
-              trueBranch = currentNode;
-            } else if (trueBranch.state == 1) {
-              currentNode = trueBranch;
-              trueStr = trueStr + dumpwhileBranchCode();
-              trueBranch = currentNode;
             }
           }
 
-          if (trueBranch.state == 10) {
-            currentNode = trueBranch;
-            trueStr = trueStr + dumpdowhileBranchCode();
-            trueBranch = currentNode;
+          if (trueBranch.y > falseBranch.y) {
+            var tempNode = trueBranch;
+            trueBranch = falseBranch;
+            falseBranch = tempNode;
+            tempNode = null;
           }
 
-          for (var i in edges) {
-            if (edges[i].source.id == trueBranch.id) {
-              if (trueBranch != branchNode) {
-                trueStr = trueStr + indentation(tab) + trueBranch.title.toString().replace("\n", "") + ";\n";
+          var trueStr = "";
+
+          while (trueBranch != branchNode) {
+            if (trueBranch.name == "branchComponent") {
+              if (trueBranch.state == 0) {
+                currentNode = trueBranch;
+                trueStr = trueStr + dumpifBranchCode();
+                trueBranch = currentNode;
+              } else if (trueBranch.state == 1) {
+                currentNode = trueBranch;
+                trueStr = trueStr + dumpwhileBranchCode();
+                trueBranch = currentNode;
               }
-              trueBranch = edges[i].target;
-              break;
+            }
+
+            if (trueBranch.state == 10) {
+              currentNode = trueBranch;
+              trueStr = trueStr + dumpdowhileBranchCode();
+              trueBranch = currentNode;
+            }
+
+            for (var i in edges) {
+              if (edges[i].source.id == trueBranch.id) {
+                if (trueBranch != branchNode) {
+                  trueStr = trueStr + indentation(tab) + trueBranch.title.toString().replace("\n", "") + ";\n";
+                }
+                trueBranch = edges[i].target;
+                break;
+              }
             }
           }
+
+          tab = tab - 1;
+          currentNode = falseBranch;
+          return `${indentation(tab)}while( ${branchStr} ){\n${trueStr}${indentation(tab)}}\n`;
         }
 
-        tab = tab - 1;
-        currentNode = falseBranch;
-        return `${indentation(tab)}while( ${branchStr} ){\n${trueStr}${indentation(tab)}}\n`;
-      }
+        function dumpdowhileBranchCode() {
+          tab = tab + 1;
+          var branchNode = currentNode;
+          var trueBranch = branchNode;
+          var falseBranch;
+          var trueStr = "";
+          var isContinue = true;
+          var branchStr;
 
-      function dumpdowhileBranchCode() {
-        tab = tab + 1;
-        var branchNode = currentNode;
-        var trueBranch = branchNode;
-        var falseBranch;
-        var trueStr = "";
-        var isContinue = true;
-        var branchStr;
-
-        while (isContinue) {
-          if (trueBranch.name == "branchComponent") {
-            if (trueBranch.state == 0) {
-              currentNode = trueBranch;
-              trueStr = trueStr + dumpifBranchCode();
-              trueBranch = currentNode;
-            } else if (trueBranch.state == 1) {
-              currentNode = trueBranch;
-              trueStr = trueStr + dumpwhileBranchCode();
-              trueBranch = currentNode;
-            } else if (trueBranch.state == 2) {
-              for (var i in edges) {
-                if (edges[i].source == trueBranch) {
-                  if (edges[i].target == branchNode) {
-                    isContinue = false;
-                    for (var j in edges) {
-                      if (j != i && edges[j].source == trueBranch) {
-                        falseBranch = edges[j].target;
+          while (isContinue) {
+            if (trueBranch.name == "branchComponent") {
+              if (trueBranch.state == 0) {
+                currentNode = trueBranch;
+                trueStr = trueStr + dumpifBranchCode();
+                trueBranch = currentNode;
+              } else if (trueBranch.state == 1) {
+                currentNode = trueBranch;
+                trueStr = trueStr + dumpwhileBranchCode();
+                trueBranch = currentNode;
+              } else if (trueBranch.state == 2) {
+                for (var i in edges) {
+                  if (edges[i].source == trueBranch) {
+                    if (edges[i].target == branchNode) {
+                      isContinue = false;
+                      for (var j in edges) {
+                        if (j != i && edges[j].source == trueBranch) {
+                          falseBranch = edges[j].target;
+                        }
                       }
+                      branchStr = trueBranch.title.toString().replace("\n", "");
+                      break;
                     }
-                    branchStr = trueBranch.title.toString().replace("\n", "");
-                    break;
                   }
                 }
               }
             }
-          }
-          
-          if (!isContinue) break;
 
-          if (trueBranch != branchNode && trueBranch.state == 10) {
-            currentNode = trueBranch;
-            trueStr = trueStr + dumpdowhileBranchCode();
-            trueBranch = currentNode;
-          }
+            if (!isContinue) break;
 
-          for (var i in edges) {
-            if (edges[i].source == trueBranch) {
-              trueStr = trueStr + indentation(tab) + trueBranch.title.toString().replace("\n", "") + ";\n";
+            if (trueBranch != branchNode && trueBranch.state == 10) {
+              currentNode = trueBranch;
+              trueStr = trueStr + dumpdowhileBranchCode();
+              trueBranch = currentNode;
+            }
 
-              for (var j in nodes) {
-                if (edges[i].target == nodes[j]) {
-                  trueBranch = nodes[j];
-                  break;
+            for (var i in edges) {
+              if (edges[i].source == trueBranch) {
+                trueStr = trueStr + indentation(tab) + trueBranch.title.toString().replace("\n", "") + ";\n";
+
+                for (var j in nodes) {
+                  if (edges[i].target == nodes[j]) {
+                    trueBranch = nodes[j];
+                    break;
+                  }
                 }
+                break;
               }
-              break;
             }
           }
+
+          tab = tab - 1;
+          currentNode = falseBranch;
+          return `${indentation(tab)}do{\n${trueStr}${indentation(tab)}}while( ${branchStr} )\n`;
         }
 
-        tab = tab - 1;
-        currentNode = falseBranch;
-        return `${indentation(tab)}do{\n${trueStr}${indentation(tab)}}while( ${branchStr} )\n`;
-      }
 
 
-
-      for (var i in nodes) {
-        console.log(nodes[i]);
-        //find the entrance of progran
-        if (nodes[i].name == "startComponent") {
-          currentNode = nodes[i];
+        for (var i in nodes) {
+          console.log(nodes[i]);
+          //find the entrance of progran
+          if (nodes[i].name == "startComponent") {
+            currentNode = nodes[i];
+          }
         }
+
+        code = `${header}\nint main(){\n${dumpCode()}\treturn 0;\n}`;
+
       }
-
-      code = `${header}\nint main(){\n${dumpCode()}\treturn 0;\n}`;
-
-
+      else {
+        code = `Error!\n${code}`;
+      }
       console.log(code);
       $('div.json_data textarea').val(code);
 
     });
+
+    $('.editor-toolbar').on('click', '.eye', function (event) {
+      $('div.json_data .header').text('检查代码');
+      $('.ui.modal').modal('show');
+
+      var err = judgeGraph();
+
+      if (!err) {
+        err = "The flow chart is Good!\n";
+      }
+      $('div.json_data textarea').val(err);
+
+    });
+
   };
   //constant config
   GraphCreator.prototype.consts = {
@@ -652,6 +868,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
   /* insert svg line breaks: taken from http://stackoverflow.com/questions/13241475/how-do-i-include-newlines-in-labels-in-d3-charts */
   GraphCreator.prototype.insertTitleLinebreaks = function (gEl, d) {
     gEl.select("text").remove();
+    d.title = d.title.replace('\n', '');
 
     var words = d.title.split(/;/),
       nwords = words.length;
@@ -904,7 +1121,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           thisGraph.updateGraph();
           // thisGraph.
         } else if (selectedEdge) {
-          if (selectedEdge.source.name == "branchComponent"&&selectedEdge.source.state==2) {
+          if (selectedEdge.source.name == "branchComponent" && selectedEdge.source.state == 2) {
             selectedEdge.target.state = 0;
           }
           thisGraph.edges.splice(thisGraph.edges.indexOf(selectedEdge), 1);
