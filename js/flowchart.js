@@ -1352,7 +1352,9 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         }
         //如果源头是开始或流程块，只能上下伸出边
         else if (d.source.name == "activityComponent" ||
-          d.source.name == "startComponent") {
+          d.source.name == "startComponent" ||
+          d.source.name == "connecterComponent" ||
+        d.source.name == "pageconnecterComponent") {
           return "M" + d.source.x + "," + d.source.y +
             "L" + d.source.x + "," + d.target.y +
             "L" + d.target.x + "," + d.target.y;
