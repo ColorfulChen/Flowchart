@@ -378,11 +378,10 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
             errMessage += `There are no component connect to ${nodes[i].name} ${nodes[i].title}!\n`;
           } else {
             if (state != 1) {
-               errMessage += `There are more than 1 component connect to ${nodes[i].name} ${nodes[i].title}!\n`;
-            }
-            else if (edgeinout[1] != 2) {
+              errMessage += `There are more than 1 component connect to ${nodes[i].name} ${nodes[i].title}!\n`;
+            } else if (edgeinout[1] != 2) {
               errMessage += `There should be 1 component connect to ${nodes[i].name} ${nodes[i].title}!\n`;
-           }
+            }
           }
         }
 
@@ -834,7 +833,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           var copyComponent = curComponent;
           while (copyComponent.name != 'endComponent') {
             console.log(copyComponent);
-            if (copyComponent == curComponent) break;
 
             if (copyComponent.name == 'branchComponent') {
               var b1 = -1;
@@ -865,7 +863,34 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
                 modify(edges[b1].target, 0);
                 modify(edges[b2].target, 1);
                 return;
-              } else if (copyComponent.state == 1) {//while branch
+              } else if (copyComponent.state == 1) { //while branch
+                var tb, fb;
+                if (edges[b1].target.y < edges[b2].target.y) {
+                  tb = b1;
+                  fb = b2;
+                } else {
+                  tb = b2;
+                  fb = b1;
+                }
+
+                var t = nodes[tb];
+
+                while (t != copyComponent) {
+                  console.log(t);
+                  for (var k in edges) {
+                    if (edges[k].source.id == t.id) {
+                      t = edges[k].target;
+                      offset[1] += verticalGap;
+                      t.x = offset[0];
+                      t.y = offset[1];
+                    }
+                  }
+                }
+
+                nodes[fb].x = offset[0];
+                nodes[fb].y = offset[1] + 2*verticalGap;
+                modify(nodes[fb], 0);
+                return;
 
               } else if (copyComponent.state == 2) { //do-while branch
                 if (edges[b1].target.y > edges[b2].target.y) {
@@ -921,6 +946,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
                 }
               }
             }
+            if (copyComponent == curComponent) break;
           }
 
           thisGraph.updateGraph();
@@ -1360,7 +1386,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         else if (d.source.name == "activityComponent" ||
           d.source.name == "startComponent" ||
           d.source.name == "connecterComponent" ||
-        d.source.name == "pageconnecterComponent") {
+          d.source.name == "pageconnecterComponent") {
           return "M" + d.source.x + "," + d.source.y +
             "L" + d.source.x + "," + d.target.y +
             "L" + d.target.x + "," + d.target.y;
