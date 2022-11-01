@@ -372,12 +372,17 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         }
       }
 
-      function judgebranchComponent() {
+      function judgebranchComponent(state) {
         if (edgeinout[1] != 1) {
           if (edgeinout[1] < 1) {
             errMessage += `There are no component connect to ${nodes[i].name} ${nodes[i].title}!\n`;
           } else {
-            errMessage += `There are more than 1 component connect to ${nodes[i].name} ${nodes[i].title}!\n`;
+            if (state != 1) {
+               errMessage += `There are more than 1 component connect to ${nodes[i].name} ${nodes[i].title}!\n`;
+            }
+            else if (edgeinout[1] != 2) {
+              errMessage += `There should be 1 component connect to ${nodes[i].name} ${nodes[i].title}!\n`;
+           }
           }
         }
 
@@ -409,7 +414,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
             break;
 
           case `branchComponent`:
-            judgebranchComponent();
+            judgebranchComponent(nodes[i].state);
             break;
 
           case `connecterComponent`:
@@ -829,6 +834,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           var copyComponent = curComponent;
           while (copyComponent.name != 'endComponent') {
             console.log(copyComponent);
+            if (copyComponent == curComponent) break;
 
             if (copyComponent.name == 'branchComponent') {
               var b1 = -1;
@@ -859,7 +865,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
                 modify(edges[b1].target, 0);
                 modify(edges[b2].target, 1);
                 return;
-              } else if (copyComponent.state == 1) {
+              } else if (copyComponent.state == 1) {//while branch
 
               } else if (copyComponent.state == 2) { //do-while branch
                 if (edges[b1].target.y > edges[b2].target.y) {
