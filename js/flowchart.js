@@ -824,28 +824,28 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
           offset[0] = curComponent.x;
           offset[1] = curComponent.y;
           var verticalGap = 200;
-          var horizonGap = 200;
+          var horizonGap = 150;
 
           var copyComponent = curComponent;
           while (copyComponent.name != 'endComponent') {
             console.log(copyComponent);
 
             if (copyComponent.name == 'branchComponent') {
-              if (copyComponent.state == 0) { //if branch
-                var b1 = -1;
-                var b2 = -1;
+              var b1 = -1;
+              var b2 = -1;
 
-                for (var j in edges) {
-                  if (edges[j].source.id == copyComponent.id) {
-                    if (b1 == -1) {
-                      b1 = j;
-                    } else {
-                      b2 = j;
-                      break;
-                    }
+              for (var j in edges) {
+                if (edges[j].source.id == copyComponent.id) {
+                  if (b1 == -1) {
+                    b1 = j;
+                  } else {
+                    b2 = j;
+                    break;
                   }
                 }
+              }
 
+              if (copyComponent.state == 0) { //if branch
                 if (edges[b1].target.x <= edges[b2].target.x) {
                   edges[b1].target.x = copyComponent.x - horizonGap;
                   edges[b2].target.x = copyComponent.x + horizonGap;
@@ -861,8 +861,19 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
                 return;
               } else if (copyComponent.state == 1) {
 
-              } else if (copyComponent.state == 2) {
-
+              } else if (copyComponent.state == 2) { //do-while branch
+                if (edges[b1].target.y > edges[b2].target.y) {
+                  //b1 is false branch
+                  edges[b1].target.x = offset[0];
+                  edges[b1].target.y = offset[1] + verticalGap;
+                  modify(edges[b1].target, 0);
+                  return;
+                } else {
+                  edges[b2].target.x = offset[0];
+                  edges[b2].target.y = offset[1] + verticalGap;
+                  modify(edges[b2].target, 0);
+                  return;
+                }
               }
             } else {
               for (var j in edges) {
@@ -889,8 +900,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
                           if (edges[k].target.name != 'connecterComponent') {
                             edges[k].target.x = edges[j].target.x;
                             edges[k].target.y = edges[j].target.y + verticalGap;
-                          }
-                          else {
+                          } else {
                             edges[k].target.x = (edges[j].target.x + edges[k].target.x) / 2;
                             if (edges[j].target.y + verticalGap > edges[k].target.y) {
                               edges[k].target.y = edges[j].target.y + verticalGap;
