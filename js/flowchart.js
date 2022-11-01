@@ -806,7 +806,118 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
     });
 
     $('.editor-toolbar').on('click', '.align.justify', function (event) {
+      var err = judgeGraph();
+      if (!err) {
+        var nodes = thisGraph.nodes;
+        var edges = thisGraph.edges;
 
+        var standardComponent;
+        for (var i in nodes) {
+          if (nodes[i].name == "startComponent") {
+            standardComponent = nodes[i];
+            break;
+          }
+        }
+
+        function modify(curComponent, isModifyConnecter) {
+          var offset = new Array;
+          offset[0] = curComponent.x;
+          offset[1] = curComponent.y;
+          var verticalGap = 200;
+          var horizonGap = 200;
+
+          var copyComponent = curComponent;
+          while (copyComponent.name != 'endComponent') {
+            console.log(copyComponent);
+
+            if (copyComponent.name == 'branchComponent') {
+              if (copyComponent.state == 0) { //if branch
+                var b1 = -1;
+                var b2 = -1;
+
+                for (var j in edges) {
+                  if (edges[j].source.id == copyComponent.id) {
+                    if (b1 == -1) {
+                      b1 = j;
+                    } else {
+                      b2 = j;
+                      break;
+                    }
+                  }
+                }
+
+                if (edges[b1].target.x <= edges[b2].target.x) {
+                  edges[b1].target.x = copyComponent.x - horizonGap;
+                  edges[b2].target.x = copyComponent.x + horizonGap;
+                } else {
+                  edges[b1].target.x = copyComponent.x + horizonGap;
+                  edges[b2].target.x = copyComponent.x - horizonGap;
+                }
+                edges[b1].target.y = copyComponent.y + verticalGap;
+                edges[b2].target.y = copyComponent.y + verticalGap;
+
+                modify(edges[b1].target, 0);
+                modify(edges[b2].target, 1);
+                return;
+              } else if (copyComponent.state == 1) {
+
+              } else if (copyComponent.state == 2) {
+
+              }
+            } else {
+              for (var j in edges) {
+                if (edges[j].source.id == copyComponent.id) {
+                  if (edges[j].target.name != 'connecterComponent') {
+                    offset[1] += verticalGap;
+                    edges[j].target.x = offset[0];
+                    edges[j].target.y = offset[1];
+                    copyComponent = edges[j].target;
+                    break;
+                  } else {
+                    if (isModifyConnecter == 0) {
+                      edges[j].target.x = offset[0];
+                      edges[j].target.y = offset[1] + verticalGap;
+                      return;
+                    } else if (isModifyConnecter == 1) {
+                      offset[1] += verticalGap;
+                      edges[j].target.x = (edges[j].target.x + offset[0]) / 2;
+                      if (offset[1] > edges[j].target.y) {
+                        edges[j].target.y = offset[1];
+                      }
+                      for (var k in edges) {
+                        if (edges[k].source == edges[j].target) {
+                          if (edges[k].target.name != 'connecterComponent') {
+                            edges[k].target.x = edges[j].target.x;
+                            edges[k].target.y = edges[j].target.y + verticalGap;
+                          }
+                          else {
+                            edges[k].target.x = (edges[j].target.x + edges[k].target.x) / 2;
+                            if (edges[j].target.y + verticalGap > edges[k].target.y) {
+                              edges[k].target.y = edges[j].target.y + verticalGap;
+                            }
+                          }
+                          modify(edges[k].target, 0);
+                          return;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          thisGraph.updateGraph();
+          return;
+        }
+
+        modify(standardComponent, 0);
+      } else {
+        $('div.json_data .header').text('检查代码');
+        $('.ui.modal').modal('show');
+        err = `Error!\n${err}`;
+        $('div.json_data textarea').val(err);
+      }
     });
 
     $('.editor-toolbar').on('click', '.star', function (event) {
