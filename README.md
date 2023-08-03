@@ -1,8 +1,8 @@
 # OnlineFlowchartGenerator
 An online Flowchart Generator to easily build your own flowchart. The project is developed and tested in Microsoft Edge browser.
 ## Live Demo:
-- English_ver:http://101.42.248.14:800/flowchart_eng.html
-- Chinese_ver:http://101.42.248.14:800/flowchart.html
+- English_ver:https://mrchenyukun.github.io/onlineFlowchartGenerator/flowchart_eng.html
+- Chinese_ver:https://mrchenyukun.github.io/onlineFlowchartGenerator/flowchart.html
 
 ## Features:
 - Generate activity block by draging blocks into graph.
