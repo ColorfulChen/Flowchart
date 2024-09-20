@@ -1,8 +1,8 @@
 # Flowchart
 An static Flowchart website made to easily build your own flowchart and can be converted to C++ code. The project is developed and tested in Microsoft Edge browser.
 ## Live Demo:
-- English_ver:https://mrchenyukun.github.io/Flowchart/flowchart_eng.html
-- Chinese_ver:https://mrchenyukun.github.io/Flowchart/flowchart.html
+- English_ver:https://colorfulchen.github.io/Flowchart/flowchart_eng.html
+- Chinese_ver:https://colorfulchen.github.io/Flowchart/flowchart.html
 
 ## Features:
 - Generate activity block by draging blocks into graph.
